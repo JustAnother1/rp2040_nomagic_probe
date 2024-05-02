@@ -1,0 +1,8 @@
+/build/
+/zzz/
+.~lock.*
+/*.txt
+/*.sh
+/*.sal
+/.settings/
+/*.ods
