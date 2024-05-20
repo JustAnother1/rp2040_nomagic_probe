@@ -1,13 +1,7 @@
-nomagic probe
-=============
+RP2040 nomagic probe
+====================
 
-The nomic probe is a firmware for the https://www.raspberrypi.com/products/raspberry-pi-pico/[RaspberryPi Pico board] that provides a gdbserver interface for debugging other boards.
-That is the functionality of the https://github.com/raspberrypi/picoprobe[picoprobe] and https://openocd.org/[OpenOCD] combined. It is also similar to the https://black-magic.org/[Black Magic Firmware].
-
-It does not use external libraries. Therefore all code is in this library, no dependencies!
-
-No dynamic memory allocation, no malloc!
-
+This firmware uses nomagic probe. It provides a gdb server interface to be used with RP2040 (The chip on the RaspberryPi pico board) over a SWD connection.
 :toc:
 
 == features
@@ -16,28 +10,15 @@ No dynamic memory allocation, no malloc!
  - USB MSCD(thumb drive) for configuration files.
  - support for SWD according to ARM ADIv5.0, ARM ADIv5.1, ARM ADIv5.2, ARM ADIv6.0.
 
-== targets
-the firmware can be build for different targets. How this can be done is explained in "make help".
-
-=== DETECT
-command line interface on USB serial port. This allows analysis of unsupported chips.
-
-=== EXTERN
-define target by configuration files in thumb drive (still to come)
-
-=== default (RP2040)
-SWD connection to a RaspberryPi RP2040
-
-
 == documentation
 
-link:doc/overview.asciidoc[overview]
+link:nomagic_probe/doc/overview.asciidoc[overview nomagic probe]
 
 Additional documentation can be created
 
 +make doc+
 
-the created documentation is then located in the bin/doxygen/ folder.
+the created documentation is then located in the build/doxygen/ folder.
 
 == building and starting
 
