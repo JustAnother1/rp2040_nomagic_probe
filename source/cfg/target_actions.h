@@ -13,9 +13,11 @@
  *
  */
 
-#ifndef SOURCE_TARGET_WALK_H_
-#define SOURCE_TARGET_WALK_H_
+#ifndef SOURCE_CFG_TARGET_ACTIONS_H_
+#define SOURCE_CFG_TARGET_ACTIONS_H_
 
-// no special Walks for this target, yet!
 
-#endif /* SOURCE_TARGET_WALK_H_ */
+
+
+
+#endif /* SOURCE_CFG_TARGET_ACTIONS_H_ */

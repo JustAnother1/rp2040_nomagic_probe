@@ -15,15 +15,11 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include "target_info.h"
-#include "target_actions.h"
-#include "target_info.h"
 #include "result.h"
 #include "debug_log.h"
 #include "swd.h"
 #include "gdb_packets.h"
 #include "common.h"
-#include "device_specific.h"
 #include "cortex-m.h"
 #include "hex.h"
 
@@ -64,6 +60,25 @@
     "<memory type=\"ram\" start=\"0x20000000\" length=\"0x20042000\"/>\r\n" \
 "</memory-map>\r\n"
 
+bool target_is_SWDv2(void)
+{
+    return true;
+}
+uint32_t target_get_SWD_core_id(uint32_t core_num) // only required for SWDv2 (TARGETSEL)
+{
+    switch(core_num)
+    {
+    case 0: return SWD_ID_CORE_0;
+    case 1: return SWD_ID_CORE_1;
+    }
+    return 0;
+}
+uint32_t target_get_SWD_APSel(uint32_t core_num)
+{
+    (void) core_num;
+    return SWD_AP_SEL;
+}
+
 bool cmd_target_info(uint32_t loop)
 {
     if(0 == loop)
@@ -77,215 +92,6 @@ bool cmd_target_info(uint32_t loop)
         return common_cmd_target_info(loop -1);
     }
     return false; // true == Done; false = call me again
-}
-
-Result handle_target_close_connection(action_data_typ* action, bool first_call)
-{
-    if(true == first_call)
-    {
-        debug_line("closing SWD connection !");
-        action->walk->type = WALK_DISCONNECT;
-        action->walk->phase = 0;
-        action->walk->result = RESULT_OK;
-        action->walk->is_done = false;
-        action->phase = 1;
-        return ERR_NOT_COMPLETED;
-    }
-    else // if(1 == step)
-    {
-        if(RESULT_OK == action->walk->result)
-        {
-            debug_line("Disconnected!");
-        }
-        else
-        {
-            debug_line("ERROR: failed to disconnect(%ld)!", action->walk->result);
-        }
-        target_set_status(NOT_CONNECTED);
-    }
-    return action->walk->result;
-}
-
-Result handle_target_connect(action_data_typ* action, bool first_call)
-{
-    if(true == first_call)
-    {
-        debug_line("connecting SWDv2 (0x%08x)", SWD_ID_CORE_0);
-        action->walk->type = WALK_CONNECT;
-        action->walk->par_b_0 = true; // multi = SWDv2 -> true
-        action->walk->par_i_0 = SWD_ID_CORE_0;  // TODO multi core
-        action->walk->par_i_1 = SWD_AP_SEL;
-        action->walk->phase = 0;
-        action->walk->result = RESULT_OK;
-        action->walk->is_done = false;
-        action->phase = 1;
-        return ERR_NOT_COMPLETED;
-    }
-    if(1 == action->phase)
-    {
-        if(RESULT_OK == action->walk->result)
-        {
-            debug_line("connected!");
-        }
-        else
-        {
-            debug_line("ERROR: failed to connect!");
-        }
-        target_set_status(CONNECTED_HALTED);  // TODO enable connect without halt
-    }
-    return action->walk->result;
-}
-
-Result handle_target_reply_g(action_data_typ* action, bool first_call)
-{
-    // ‘g’
-    //    Read general registers.
-    //    Reply:
-    //    ‘XX…’
-    //        Each byte of register data is described by two hex digits.
-    // The bytes with the register are transmitted in target byte order.
-    // The size of each register and their position within the ‘g’ packet
-    // are determined by the target description (see Target Descriptions);
-    // in the absence of a target description, this is done using code
-    // internal to GDB; typically this is some customary register layout
-    // for the architecture in question.
-    //        When reading registers, the stub may also return a string of
-    // literal ‘x’’s in place of the register data digits, to indicate that
-    // the corresponding register’s value is unavailable. For example, when
-    // reading registers from a trace frame (see Using the Collected Data),
-    // this means that the register has not been collected in the trace frame.
-    // When reading registers from a live program, this indicates that the stub
-    // has no means to access the register contents, even though the
-    // corresponding register is known to exist. Note that if a register truly
-    // does not exist on the target, then it is better to not include it in the
-    // target description in the first place.
-    //        For example, for an architecture with 4 registers of 4 bytes each,
-    // the following reply indicates to GDB that registers 0 and 2 are
-    // unavailable, while registers 1 and 3 are available, and both have zero
-    // value:
-    //        -> g
-    //        <- xxxxxxxx00000000xxxxxxxx00000000
-    //    ‘E NN’
-    //        for an error.
-
-    if(true == first_call)
-    {
-        reply_packet_prepare();
-        action->phase = 1;
-        action->intern_0 = 0;
-        return ERR_NOT_COMPLETED;
-    }
-    // else ...
-    if(1 == action->phase)
-    {
-        action->walk->type = WALK_READ_SPECIAL_REGISTER;
-        action->walk->par_i_0 = action->intern_0;  // select the register to read
-        action->walk->phase = 0;
-        action->walk->result = RESULT_OK;
-        action->walk->is_done = false;
-        action->phase = 2;
-        return ERR_NOT_COMPLETED;
-    }
-    else //if(2 == action->phase)
-    {
-        if(RESULT_OK == action->walk->result)
-        {
-            char buf[9];
-            buf[8] = 0;
-            int_to_hex(buf, action->walk->read_0, 8);
-            reply_packet_add(buf);
-            debug_line("read 0x%08lx", action->walk->read_0);
-            action->intern_0++;
-            action->phase = 1;
-            if(17 == action->intern_0)
-            {
-                // finished
-                reply_packet_send();
-                return RESULT_OK;
-            }
-            else
-            {
-                // continue with next register
-                return ERR_NOT_COMPLETED;
-            }
-        }
-        else
-        {
-            debug_line("ERROR: failed to read special register (%ld)!", action->walk->result);
-            reply_packet_prepare();
-            reply_packet_add("E23");
-            reply_packet_send();
-            return action->walk->result;
-        }
-    }
-}
-
-Result handle_target_reply_write_g(action_data_typ* action, bool first_call)
-{
-    // ‘G XX…’
-    //     Write general registers. See read registers packet, for a description
-    // of the XX… data.
-    //     Reply:
-    //     ‘OK’
-    //         for success
-    //     ‘E NN’
-    //         for an error
-
-    if(true == first_call)
-    {
-        reply_packet_prepare();
-        action->phase = 1;
-        action->intern_0 = 0;
-        return ERR_NOT_COMPLETED;
-    }
-    if(1 == action->phase)
-    {
-        uint32_t i;
-        bool found = false;
-        for(i = 0; i < action->parameter->num_memeory_locations; i++)
-        {
-            if(true == action->parameter->memory[i].has_value)
-            {
-                // write that value
-                found = true;
-                break;
-            }
-            // else skip that value
-        }
-        if(false == found)
-        {
-            // no memory location found -> we are done
-            reply_packet_add("OK");
-            reply_packet_send();
-            return RESULT_OK;
-        }
-        // else
-        action->walk->type = WALK_WRITE_SPECIAL_REGISTER;
-        action->walk->par_i_0 = i;  // select the register to write
-        action->walk->par_i_1 = action->parameter->memory[i].value;
-        action->walk->phase = 0;
-        action->walk->result = RESULT_OK;
-        action->walk->is_done = false;
-        action->phase = 2;
-        return ERR_NOT_COMPLETED;
-    }
-    else //if(2 == action->phase)
-    {
-        if(RESULT_OK == action->walk->result)
-        {
-            action->phase = 1;
-            // continue with next register
-            return ERR_NOT_COMPLETED;
-        }
-        else
-        {
-            debug_line("ERROR: failed to write special register (%ld)!", action->walk->result);
-            reply_packet_prepare();
-            reply_packet_add("E23");
-            reply_packet_send();
-            return action->walk->result;
-        }
-    }
 }
 
 void target_send_file(char* filename, uint32_t offset, uint32_t len)

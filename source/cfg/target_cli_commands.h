@@ -16,9 +16,10 @@
 #ifndef SOURCE_CFG_TARGET_CLI_COMMANDS_H_
 #define SOURCE_CFG_TARGET_CLI_COMMANDS_H_
 
-#include "target_actions.h"
+#include <stdint.h>
+
+bool cmd_target_info(uint32_t loop);
 
 #define TARGET_CLI_COMMANDS
-
 
 #endif /* SOURCE_CFG_TARGET_CLI_COMMANDS_H_ */
