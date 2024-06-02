@@ -40,6 +40,9 @@ TST_LD = cc
 #
 # - HAS_GDB_SERVER = yes
 #       gdb-server interface.
+#
+# - HAS_NCM = yes
+#       USB Network interface. Allows other interfaces to be available as TCP Ports.
 
 BIN_FOLDER = build/
 SRC_FOLDER = source/
@@ -50,6 +53,7 @@ HAS_DEBUG_UART = yes
 HAS_DEBUG_CDC = no
 HAS_CLI = yes
 HAS_GDB_SERVER = yes
+HAS_NCM = yes
 
 
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
