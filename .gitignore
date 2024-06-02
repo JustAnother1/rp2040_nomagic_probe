@@ -1,4 +1,5 @@
 /build/
+/build
 /zzz/
 .~lock.*
 /*.txt
@@ -7,4 +8,3 @@
 /.settings/
 /*.ods
 *.bak
-
