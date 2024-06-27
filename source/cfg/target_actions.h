@@ -16,8 +16,11 @@
 #ifndef SOURCE_CFG_TARGET_ACTIONS_H_
 #define SOURCE_CFG_TARGET_ACTIONS_H_
 
+#include "probe_api/common.h"
 
-
+Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_call);
+Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first_call);
+Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first_call);
 
 
 #endif /* SOURCE_CFG_TARGET_ACTIONS_H_ */

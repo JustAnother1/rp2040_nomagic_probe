@@ -118,3 +118,37 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len)
     reply_packet_add("E00");
     reply_packet_send();
 }
+
+Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_call)
+{
+    (void) action;
+    (void) first_call;
+    // TODO
+    reply_packet_prepare();
+    reply_packet_add("OK");
+    reply_packet_send();
+    return RESULT_OK;
+}
+
+Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first_call)
+{
+    (void) action;
+    (void) first_call;
+    // TODO
+    reply_packet_prepare();
+    reply_packet_add("OK");
+    reply_packet_send();
+    return RESULT_OK;
+}
+
+Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first_call)
+{
+    (void) action;
+    (void) first_call;
+    // TODO
+    reply_packet_prepare();
+    reply_packet_add("OK");
+    reply_packet_send();
+    return RESULT_OK;
+}
+
