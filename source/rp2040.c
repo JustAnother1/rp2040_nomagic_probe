@@ -22,6 +22,7 @@
 #include "common.h"
 #include "cortex-m.h"
 #include "hex.h"
+#include "util.h"
 
 // RP2040:
 // Core 0: 0x01002927
@@ -123,6 +124,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_
 {
     (void) action;
     (void) first_call;
+    debug_line("Flash Done!");
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
@@ -134,6 +136,8 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
 {
     (void) action;
     (void) first_call;
+    debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx",
+               action->gdb_parameter->address, action->gdb_parameter->length);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
@@ -145,6 +149,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first
 {
     (void) action;
     (void) first_call;
+    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter->address);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
@@ -152,3 +157,18 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first
     return RESULT_OK;
 }
 
+void target_monitor_command(char* command)
+{
+    (void)command;
+    char buf[100];
+    if(false)
+    {
+    }
+    else
+    {
+        // invalid command
+        encode_text_to_hex_string("ERROR: invalid command !\r\n", sizeof(buf), buf);
+        reply_packet_add(buf);
+    }
+    reply_packet_send();
+}

@@ -5,6 +5,7 @@
 # The target chip specif stuff is handeled in the included target.mk file.
 
 PROJECT = rp2040_nomagic_probe
+PROBE_NAME = "rp2040 "
 
 # tools
 # =====
