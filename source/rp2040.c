@@ -375,15 +375,15 @@ static void mon_cmd_reg(char* command)
             }
             else if(0 == strncmp("basepri", command, sizeof("basepri")))
             {
-                parsed_parameter.index = 21;
+                parsed_parameter.index = 20;
             }
             else if(0 == strncmp("faultmask", command, sizeof("faultmask")))
             {
-                parsed_parameter.index = 22;
+                parsed_parameter.index = 20;
             }
             else if(0 == strncmp("control", command, sizeof("control")))
             {
-                parsed_parameter.index = 23;
+                parsed_parameter.index = 20;
             }
             else
             {
@@ -422,7 +422,6 @@ Result handle_monitor_reg(action_data_typ* const action, bool first_call)
 
     if(true == first_call)
     {
-        reply_packet_prepare();
         *(action->cur_phase) = 0;
         if(true == action->gdb_parameter->has_index)
         {
@@ -446,6 +445,8 @@ Result handle_monitor_reg(action_data_typ* const action, bool first_call)
     // 2. read DHCSR until S_REGRDY is 1
     if(1 == *(action->cur_phase))
     {
+        reply_packet_prepare();
+        reply_packet_add("O"); // packet is $ big oh, hex string# checksum
         return do_read_ap(action, DHCSR);
     }
 
@@ -497,29 +498,151 @@ Result handle_monitor_reg(action_data_typ* const action, bool first_call)
 
     if(6 == *(action->cur_phase))
     {
-        // this register done, next?
-        reply_packet_add_hex(action->read_0, 8);
-        debug_line("read 0x%08lx", action->read_0);
-        action->intern[INTERN_REGISTER_IDX] ++;
-        *(action->cur_phase) = 0;
-
         // clear buffer
+        char buf[100];
         memset(&msg_buf, 0, sizeof(msg_buf));
 
         if(true == action->gdb_parameter->has_index)
         {
-            // "r1 (/32): 0x2002f91c"
-            // msg_buf
-            // TODO
+            switch(action->intern[INTERN_REGISTER_IDX])
+            {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+                snprintf(msg_buf, sizeof(msg_buf), "r%ld (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 13: // sp
+                snprintf(msg_buf, sizeof(msg_buf), "sp (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 14: // LR
+                snprintf(msg_buf, sizeof(msg_buf), "lr (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 15: // PC
+                snprintf(msg_buf, sizeof(msg_buf), "pc (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 16: // xPSR
+                snprintf(msg_buf, sizeof(msg_buf), "xPSR (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 17: // MSP
+                snprintf(msg_buf, sizeof(msg_buf), "msp (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 18: // PSP
+                snprintf(msg_buf, sizeof(msg_buf), "psp (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 20: // CONROL / PRIMASK
+                snprintf(msg_buf, sizeof(msg_buf), "control/primask (/32): 0x%08lx\r\n", action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+            }
         }
         else
         {
-            // (1) r1 (/32): 0x2002f91c (dirty)
-            // TODO
+            switch(action->intern[INTERN_REGISTER_IDX])
+            {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) r%ld (/32): 0x%08lx\r\n",
+                         action->intern[INTERN_REGISTER_IDX],
+                         action->intern[INTERN_REGISTER_IDX],
+                         action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 13: // sp
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) sp (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 14: // LR
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) lr (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 15: // PC
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) pc (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 16: // xPSR
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) xPSR (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 17: // MSP
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) msp (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 18: // PSP
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) psp (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+
+            case 20: // CONROL / PRIMASK
+                snprintf(msg_buf, sizeof(msg_buf), "(%ld) control/primask (/32): 0x%08lx\r\n", action->intern[INTERN_REGISTER_IDX], action->read_0);
+                encode_text_to_hex_string(msg_buf, sizeof(buf), buf);
+                reply_packet_add(buf);
+                break;
+            }
         }
+        reply_packet_send();
+
+        // this register done, next?
+        action->intern[INTERN_REGISTER_IDX] ++;
+        *(action->cur_phase) = 0;
 
         if(   (true == action->gdb_parameter->has_index)
-           || (17 == action->intern[INTERN_REGISTER_IDX]) )  // TODO 17 -> 23
+           || (21 == action->intern[INTERN_REGISTER_IDX]) )
         {
             // finished
             // end of output
