@@ -56,6 +56,29 @@ HAS_CLI = yes
 HAS_GDB_SERVER = yes
 HAS_NCM = yes
 
+# unit test configuration
+# =======================
+
+TST_LFLAGS = -lgcov --coverage
+TST_CFLAGS =  -c -Wall -Wextra -g3 -fprofile-arcs -ftest-coverage -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
+TST_DDEFS = -DUNIT_TEST=1
+TST_DDEFS += -DFEAT_DEBUG_UART
+TST_INCDIRS += /usr/include/
+TST_INCDIRS = tests/
+TST_INCDIRS += source/
+TST_INCDIRS += nomagic_probe/src/
+TST_INCDIR = $(patsubst %,-I%, $(TST_INCDIRS))
+
+# Files to compile for unit tests
+# ===============================
+
+TST_OBJS += tests/bin/source/rp2040.o
+TST_OBJS += tests/bin/tests/rp2040_tests.o
+TST_OBJS += tests/bin/tests/mocks.o
+TST_OBJS += tests/bin/tests/allTests.o
+TST_OBJS += tests/bin/tests/munit.o
+TST_OBJS += tests/bin/nomagic_probe/src/lib/printf.o
+
 
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 # ! ! ! ! ALL CONFIGURATION SETTINGS ARE ABOVE THIS LINE  ! ! ! !

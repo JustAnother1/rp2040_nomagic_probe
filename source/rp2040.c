@@ -16,17 +16,17 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "common.h"
-#include "cortex-m.h"
-#include "debug_log.h"
-#include "gdb_monitor_commands.h"
-#include "gdb_packets.h"
-#include "hex.h"
-#include "result.h"
-#include "steps.h"
-#include "swd.h"
+#include "probe_api/common.h"
+#include "probe_api/cortex-m.h"
+#include "probe_api/debug_log.h"
+#include "probe_api/gdb_monitor_commands.h"
+#include "probe_api/gdb_packets.h"
+#include "probe_api/hex.h"
+#include "probe_api/result.h"
+#include "probe_api/steps.h"
+#include "probe_api/swd.h"
 #include "target.h"
-#include "util.h"
+#include "probe_api/util.h"
 
 // RP2040:
 // Core 0: 0x01002927
