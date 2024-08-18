@@ -203,7 +203,8 @@ test: $(PROJECT)_tests
 	tests/bin/$(PROJECT)_tests
 
 lcov: 
-	lcov  --directory tests/ -c -o tests/bin/lcov.info --exclude "*tests/*" --exclude "*/usr/include/*" 
+# --exclude patterns match agains absolute file name, therefore they need to start with * to match the unknown working directory
+	lcov --directory tests/ -c -o tests/bin/lcov.info --exclude "*/tests/*" --exclude "*/src/*" --exclude "*/usr/include/*"
 	genhtml -o test_coverage -t "coverage" --num-spaces 4 tests/bin/lcov.info -o tests/bin/test_coverage/
 
 
