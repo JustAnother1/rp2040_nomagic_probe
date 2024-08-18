@@ -7,5 +7,8 @@
 
 void* rp2040_setup(const MunitParameter params[], void* user_data);
 MunitResult test_swd_v2(const MunitParameter params[], void* user_data);
+MunitResult test_get_core_id(const MunitParameter params[], void* user_data);
+MunitResult test_get_apsel(const MunitParameter params[], void* user_data);
+MunitResult test_target_info(const MunitParameter params[], void* user_data);
 
 #endif /* TESTS_CLI_TESTS_H_ */

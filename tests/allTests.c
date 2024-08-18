@@ -2,15 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "rp2040_tests.h"
-/*
-#include "../src/probe_api/cli.h"
-#include "../src/lib/printf.h"
-#include "cli_tests.h"
-#include "usb_msc_tests.h"
-#include "printf_tests.h"
-#include "gdbserver_util_tests.h"
-#include "gdbserver_gdbserver_tests.h"
-*/
 
 // Creating a test suite is pretty simple.  First, you'll need an
 // array of tests:
@@ -46,37 +37,13 @@ static MunitTest all_tests[] = {
   // Usually this is written in a much more compact format; all these
   // comments kind of ruin that, though.  Here is how you'll usually
   // see entries written:
-  /*
-  { (char*) "/cli/tick/idle",        test_cli_tick_idle,         cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/echo",        test_cli_tick_echo,         cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/no_echo",     test_cli_tick_no_echo,      cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_r",    test_cli_tick_prompt_r,     cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_n",    test_cli_tick_prompt_n,     cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_rn",   test_cli_tick_prompt_rn,    cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_nr",   test_cli_tick_prompt_nr,    cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_nn",   test_cli_tick_prompt_nn,    cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_rr",   test_cli_tick_prompt_rr,    cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_rnr",  test_cli_tick_prompt_rnr,   cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_nrn",  test_cli_tick_prompt_nrn,   cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_rnrn", test_cli_tick_prompt_rnrn,  cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/prompt_nrnr", test_cli_tick_prompt_nrnr,  cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/cmd_invalid", test_cli_tick_cmd_invalid,  cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/cli/tick/cmd_help",    test_cli_tick_cmd_help,     cli_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
 
-  { (char*) "/printf/init",          test_printf_init,           printf_setup,  NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/printf/printf/string", test_printf_printf_str,     printf_setup,  NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/printf/printf/int",    test_printf_printf_int,     printf_setup,  NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/printf/printf/digits", test_printf_printf_digits,  printf_setup,  NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/core_id",       test_get_core_id,           rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/apsel",         test_get_apsel,             rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/target_info",   test_target_info,           rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
 
-  { (char*) "/usb_msc/unit_ready",   test_usb_msc_unit_ready_cb, usb_msc_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  // new test go here
 
-  { (char*) "/gdbserver/util/hex_to_int",   test_gdbserver_util_hex_to_int, gdbserver_util_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/gdbserver/util/int_to_hex",   test_gdbserver_util_int_to_hex, gdbserver_util_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-
-  { (char*) "/gdbserver/gdbserver/empty_packet",   test_gdbserver_empty_packet, gdbserver_gdbserver_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/gdbserver/gdbserver/hex",   test_gdbserver_hex, gdbserver_gdbserver_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/gdbserver/gdbserver/hex_sqish",   test_gdbserver_hex_sqish, gdbserver_gdbserver_setup, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  */
   // To tell the test runner when the array is over, just add a NULL
   // entry at the end. */
   { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
