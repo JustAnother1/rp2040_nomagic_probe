@@ -38,9 +38,13 @@ static MunitTest all_tests[] = {
   // comments kind of ruin that, though.  Here is how you'll usually
   // see entries written:
 
-  { (char*) "/rp2040/core_id",       test_get_core_id,           rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/rp2040/apsel",         test_get_apsel,             rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { (char*) "/rp2040/target_info",   test_target_info,           rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/core_id",         test_get_core_id,                 rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/apsel",           test_get_apsel,                   rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/target_info",     test_target_info,                 rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/send_target.xml", test_target_send_file_target_xml, rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/send_threads",    test_target_send_file_threads,    rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/send_memory-map", test_target_send_file_memory_map, rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*) "/rp2040/send_invalid",    test_target_send_file_invalid,    rp2040_setup,     NULL, MUNIT_TEST_OPTION_NONE, NULL },
 
   // new test go here
 

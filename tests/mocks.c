@@ -15,8 +15,50 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
+#include <string.h>
 #include "probe_api/common.h"
 #include "probe_api/result.h"
+
+#define MAX_REPLY_LENGTH      2000
+#define MAX_PACKETS           10
+
+bool in_packet;
+uint32_t packet_idx;
+uint32_t packet_data_idx;
+bool packet_send[MAX_PACKETS];
+char packet_data[MAX_PACKETS][MAX_REPLY_LENGTH];
+
+void mocks_init(void)
+{
+    int i;
+    for(i = 0; i < MAX_PACKETS; i++)
+    {
+        packet_send[i] = false;
+    }
+    packet_idx = 0;
+    packet_data_idx = 0;
+    in_packet = false;
+}
+
+char* get_send_packet(int num)
+{
+    return &(packet_data[num][0]);
+}
+
+int get_num_send_packets(void)
+{
+    int res = 0;
+    int i;
+    for(i = 0; i < MAX_PACKETS; i++)
+    {
+        if(true == packet_send[i])
+        {
+            res++;
+        }
+    }
+    return res;
+}
 
 void send_part(char* part, uint32_t size, uint32_t offset, uint32_t length)
 {
@@ -34,17 +76,31 @@ bool common_cmd_target_info(uint32_t loop)
 
 void reply_packet_prepare(void)
 {
-
+    in_packet = true;
+    packet_data_idx = 0;
 }
 
 void reply_packet_add(char* data)
 {
-    (void)data;
+    if(NULL == data)
+    {
+        return;
+    }
+    int len = strlen(data);
+    memcpy(&(packet_data[packet_idx][packet_data_idx]), data, len);
+    packet_data_idx += len;
 }
 
 void reply_packet_send(void)
 {
-
+    packet_data[packet_idx][packet_data_idx] = 0;
+    packet_send[packet_idx] = true;
+    packet_idx++;
+    if(MAX_PACKETS == packet_idx)
+    {
+        packet_idx = 0;
+    }
+    packet_data_idx = 0;
 }
 
 void mon_cmd_version(void)

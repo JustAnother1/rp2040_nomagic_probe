@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "rp2040_tests.h"
+#include "mocks.h"
 /*
 #include "mocks.h"
 #include "../src/probe_api/cli.h"
@@ -13,6 +14,7 @@ void* rp2040_setup(const MunitParameter params[], void* user_data)
 {
     (void)params;
     (void)user_data;
+    mocks_init();
     /*
     init_printf(NULL, serial_debug_putc);
     reset_send_receive_buffers();
@@ -69,3 +71,42 @@ MunitResult test_target_info(const MunitParameter params[], void* user_data)
     return MUNIT_OK;
 }
 
+MunitResult test_target_send_file_target_xml(const MunitParameter params[], void* user_data)
+{
+    // Objective: target.xml
+    (void) params;
+    (void) user_data;
+    target_send_file("target.xml", 0, 0);
+    munit_assert_true(0 == get_num_send_packets());
+    return MUNIT_OK;
+}
+
+MunitResult test_target_send_file_threads(const MunitParameter params[], void* user_data)
+{
+    // Objective: target.xml
+    (void) params;
+    (void) user_data;
+    target_send_file("threads", 0, 0);
+    munit_assert_true(0 == get_num_send_packets());
+    return MUNIT_OK;
+}
+
+MunitResult test_target_send_file_memory_map(const MunitParameter params[], void* user_data)
+{
+    // Objective: target.xml
+    (void) params;
+    (void) user_data;
+    target_send_file("memory-map", 0, 0);
+    munit_assert_true(0 == get_num_send_packets());
+    return MUNIT_OK;
+}
+
+MunitResult test_target_send_file_invalid(const MunitParameter params[], void* user_data)
+{
+    // Objective: target.xml
+    (void) params;
+    (void) user_data;
+    target_send_file("invalid file", 0, 0);
+    munit_assert_true(1 == get_num_send_packets());
+    return MUNIT_OK;
+}
