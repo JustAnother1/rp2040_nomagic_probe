@@ -45,10 +45,5 @@ uint32_t target_get_SWD_core_id(uint32_t core_num); // only required for SWDv2 (
 uint32_t target_get_SWD_APSel(uint32_t core_num);
 
 void target_send_file(char* filename, uint32_t offset, uint32_t len);
-void target_monitor_command(uint32_t which, char* command);
-
-Result handle_monitor_halt(action_data_typ* const action, bool first_call);
-Result handle_monitor_reset_init(action_data_typ* const action, bool first_call);
-Result handle_monitor_reg(action_data_typ* const action, bool first_call);
 
 #endif /* SOURCE_TARGET_H_ */
