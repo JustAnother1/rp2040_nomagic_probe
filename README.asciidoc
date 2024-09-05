@@ -12,9 +12,9 @@ This firmware uses nomagic probe. It provides a gdb server interface to be used 
 
 == documentation
 
-link:nomagic_probe/doc/overview.asciidoc[overview nomagic probe]
+please refer to the https://github.com/JustAnother1/nomagic_probe[nomagic probe] project for most of the documentation.
 
-Additional documentation can be created
+Additional documentation can be created by doing 
 
 +make doc+
 
