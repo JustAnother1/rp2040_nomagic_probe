@@ -144,7 +144,7 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
     (void) action;
     (void) first_call;
     debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx",
-               action->gdb_parameter->address, action->gdb_parameter->length);
+               action->gdb_parameter.address, action->gdb_parameter.length);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
@@ -156,7 +156,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first
 {
     (void) action;
     (void) first_call;
-    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter->address);
+    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter.address);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");

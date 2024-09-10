@@ -20,7 +20,7 @@ def readPrintout():
 
 #arm-none-eabi-gdb --nh --nx 
 # --eval-command="set verbose on"
-# --eval-command="target extended-remote /dev/serial/by-id/usb-Raspberry_Pi_nomagic_probe_000000000001-if00" 
+# --eval-command="target extended-remote 192.168.42.1:54321" 
 # bin/nomagic_probe.elf
 cmd = 'arm-none-eabi-gdb --nh --nx build/rp2040_nomagic_probe.elf'
 
@@ -44,11 +44,11 @@ readPrintout()
 
 time.sleep(1)
 print('sending remote')
-proc.stdin.write('target extended-remote /dev/serial/by-id/usb-Raspberry_Pi_nomagic_probe_000000000001-if00\r\n'.encode())
+proc.stdin.write('target extended-remote 192.168.42.1:54321\r\n'.encode())
 proc.stdin.flush()
 time.sleep(.5)
 readPrintout()
-    
+
 time.sleep(20)
 
 readPrintout()
