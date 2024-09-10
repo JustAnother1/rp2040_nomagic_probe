@@ -19,6 +19,7 @@
 #include "probe_api/common.h"
 #include "probe_api/cortex-m.h"
 #include "probe_api/debug_log.h"
+#include "probe_api/gdb_error_codes.h"
 #include "probe_api/gdb_monitor_commands.h"
 #include "probe_api/gdb_packets.h"
 #include "probe_api/hex.h"
@@ -127,6 +128,7 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len)
     reply_packet_send();
 }
 
+// GDB_CMD_VFLASH_DONE
 Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_call)
 {
     (void) action;
@@ -139,12 +141,25 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_
     return RESULT_OK;
 }
 
+// GDB_CMD_VFLASH_ERASE
 Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first_call)
 {
     (void) action;
     (void) first_call;
+    if(ADDRESS_LENGTH != action->gdb_parameter.type)
+    {
+        // wrong parameter type
+        debug_line("ERROR: wrong parameter type !");
+        action->result = ERR_WRONG_VALUE;
+        action->is_done = true;
+        reply_packet_prepare();
+        reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
+        reply_packet_send();
+        return ERR_WRONG_VALUE;
+    }
+
     debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx",
-               action->gdb_parameter.address, action->gdb_parameter.length);
+               action->gdb_parameter.address_length.address, action->gdb_parameter.address_length.length);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
@@ -152,11 +167,24 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
     return RESULT_OK;
 }
 
+// GDB_CMD_VFLASH_WRITE
 Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first_call)
 {
     (void) action;
     (void) first_call;
-    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter.address);
+    if(ADDRESS_MEMORY != action->gdb_parameter.type)
+    {
+        // wrong parameter type
+        debug_line("ERROR: wrong parameter type !");
+        action->result = ERR_WRONG_VALUE;
+        action->is_done = true;
+        reply_packet_prepare();
+        reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
+        reply_packet_send();
+        return ERR_WRONG_VALUE;
+    }
+
+    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter.address_memory.address);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");
