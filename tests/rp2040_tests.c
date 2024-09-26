@@ -1,64 +1,57 @@
-#include <stdio.h>
-#include "rp2040_tests.h"
-#include "mocks.h"
 /*
-#include "mocks.h"
-#include "../src/probe_api/cli.h"
-#include "../src/lib/printf.h"
-#include "mock/serial_debug.h"
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <http://www.gnu.org/licenses/>
+ *
+ */
 
-extern uint8_t send_buf[TST_SEND_BUFFER_SIZE];
-*/
+#include <stdbool.h>
+#include "unity.h"
 
-void* rp2040_setup(const MunitParameter params[], void* user_data)
+void setUp(void)
 {
-    (void)params;
-    (void)user_data;
-    mocks_init();
-    /*
-    init_printf(NULL, serial_debug_putc);
-    reset_send_receive_buffers();
-    set_echo_enabled(false);
-    cli_init(); */
-    return NULL;
+
 }
 
-MunitResult test_swd_v2(const MunitParameter params[], void* user_data)
+void tearDown(void)
+{
+
+}
+
+void test_swd_v2(void)
 {
     // Objective: RP2040 is SWD v2 not v1
-    (void) params;
-    (void) user_data;
-    munit_assert_true(target_is_SWDv2());
-    return MUNIT_OK;
+    TEST_ASSERT_TRUE(target_is_SWDv2());
 }
 
-MunitResult test_get_core_id(const MunitParameter params[], void* user_data)
+
+void test_get_core_id(void)
 {
     // Objective: request the core IDs needed for SWDv2 communication
-    (void) params;
-    (void) user_data;
-    munit_assert_uint32(0x01002927, ==, target_get_SWD_core_id(0));
-    munit_assert_uint32(0x11002927, ==, target_get_SWD_core_id(1));
-    munit_assert_uint32(0, ==, target_get_SWD_core_id(2));
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_HEX32(0x01002927, target_get_SWD_core_id(0));
+    TEST_ASSERT_EQUAL_HEX32(0x11002927, target_get_SWD_core_id(1));
+    TEST_ASSERT_EQUAL_UINT32(0, target_get_SWD_core_id(2));
 }
 
-MunitResult test_get_apsel(const MunitParameter params[], void* user_data)
+void test_get_apsel(void)
 {
     // Objective: read correct APSEl value needed for SWD communication
-    (void) params;
-    (void) user_data;
-    munit_assert_uint32(0, ==, target_get_SWD_APSel(0));
-    munit_assert_uint32(0, ==, target_get_SWD_APSel(1));
-    munit_assert_uint32(0, ==, target_get_SWD_APSel(2));
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_UINT32(0, target_get_SWD_APSel(0));
+    TEST_ASSERT_EQUAL_UINT32(0, target_get_SWD_APSel(1));
+    TEST_ASSERT_EQUAL_UINT32(0, target_get_SWD_APSel(2));
 }
 
-MunitResult test_target_info(const MunitParameter params[], void* user_data)
+void test_target_info(void)
 {
     // Objective: make sure that cmd_target_info() finishes.
-    (void) params;
-    (void) user_data;
     uint32_t loop = 0;
     for(loop = 0; loop < 100; loop++)
     {
@@ -67,46 +60,48 @@ MunitResult test_target_info(const MunitParameter params[], void* user_data)
             break;
         }
     }
-    munit_assert_uint32(99, >, loop);
-    return MUNIT_OK;
+    TEST_ASSERT_TRUE(99 > loop);
 }
 
-MunitResult test_target_send_file_target_xml(const MunitParameter params[], void* user_data)
+void test_target_send_file_target_xml(void)
 {
     // Objective: target.xml
-    (void) params;
-    (void) user_data;
     target_send_file("target.xml", 0, 0);
-    munit_assert_true(0 == get_num_send_packets());
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_INT(0, mock_gdbserver_get_num_send_replies());
 }
 
-MunitResult test_target_send_file_threads(const MunitParameter params[], void* user_data)
+void test_target_send_file_threads(void)
 {
     // Objective: target.xml
-    (void) params;
-    (void) user_data;
     target_send_file("threads", 0, 0);
-    munit_assert_true(0 == get_num_send_packets());
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_INT(0, mock_gdbserver_get_num_send_replies());
 }
 
-MunitResult test_target_send_file_memory_map(const MunitParameter params[], void* user_data)
+void test_target_send_file_memory_map(void)
 {
     // Objective: target.xml
-    (void) params;
-    (void) user_data;
     target_send_file("memory-map", 0, 0);
-    munit_assert_true(0 == get_num_send_packets());
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_INT(0, mock_gdbserver_get_num_send_replies());
 }
 
-MunitResult test_target_send_file_invalid(const MunitParameter params[], void* user_data)
+void test_target_send_file_invalid(void)
 {
     // Objective: target.xml
-    (void) params;
-    (void) user_data;
     target_send_file("invalid file", 0, 0);
-    munit_assert_true(1 == get_num_send_packets());
-    return MUNIT_OK;
+    TEST_ASSERT_EQUAL_INT(1, mock_gdbserver_get_num_send_replies());
+}
+
+
+int main(void)
+{
+    UNITY_BEGIN();
+    RUN_TEST(test_swd_v2);
+    RUN_TEST(test_get_core_id);
+    RUN_TEST(test_get_apsel);
+    RUN_TEST(test_target_info);
+    RUN_TEST(test_target_send_file_target_xml);
+    RUN_TEST(test_target_send_file_threads);
+    RUN_TEST(test_target_send_file_memory_map);
+    RUN_TEST(test_target_send_file_invalid);
+    return UNITY_END();
 }

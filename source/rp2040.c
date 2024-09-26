@@ -184,7 +184,8 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first
         return ERR_WRONG_VALUE;
     }
 
-    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter.address_memory.address);
+    debug_line("Flash write: address : 0x%08lx", action->gdb_parameter.address_binary.address);
+    debug_line("Flash write: length : %ld", action->gdb_parameter.address_binary.data_length);
     // TODO
     reply_packet_prepare();
     reply_packet_add("OK");

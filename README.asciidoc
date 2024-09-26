@@ -2,19 +2,14 @@ RP2040 nomagic probe
 ====================
 
 This firmware uses nomagic probe. It provides a gdb server interface to be used with RP2040 (The chip on the RaspberryPi pico board) over a SWD connection.
+
 :toc:
-
-== features
-
- - USB CDCD(serial port) gdb server
- - USB MSCD(thumb drive) for configuration files.
- - support for SWD according to ARM ADIv5.0, ARM ADIv5.1, ARM ADIv5.2, ARM ADIv6.0.
 
 == documentation
 
 please refer to the https://github.com/JustAnother1/nomagic_probe[nomagic probe] project for most of the documentation.
 
-Additional documentation can be created by doing 
+Additional documentation can be created by doing
 
 +make doc+
 

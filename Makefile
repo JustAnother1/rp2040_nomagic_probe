@@ -49,6 +49,7 @@ BIN_FOLDER = build/
 SRC_FOLDER = source/
 NOMAGIC_FOLDER = nomagic_probe/
 
+
 HAS_MSC = yes
 HAS_DEBUG_UART = yes
 HAS_DEBUG_CDC = no
@@ -56,34 +57,12 @@ HAS_CLI = yes
 HAS_GDB_SERVER = yes
 HAS_NCM = yes
 
-# unit test configuration
-# =======================
-
-TST_LFLAGS = -lgcov --coverage
-TST_CFLAGS =  -c -Wall -Wextra -g3 -fprofile-arcs -ftest-coverage -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
-TST_DDEFS = -DUNIT_TEST=1
-TST_DDEFS += -DFEAT_DEBUG_UART
-TST_INCDIRS += /usr/include/
-TST_INCDIRS = tests/
-TST_INCDIRS += source/
-TST_INCDIRS += nomagic_probe/src/
-TST_INCDIR = $(patsubst %,-I%, $(TST_INCDIRS))
-
-# Files to compile for unit tests
-# ===============================
-
-TST_OBJS += tests/bin/source/rp2040.o
-TST_OBJS += tests/bin/tests/rp2040_tests.o
-TST_OBJS += tests/bin/tests/mocks.o
-TST_OBJS += tests/bin/tests/allTests.o
-TST_OBJS += tests/bin/tests/munit.o
-TST_OBJS += tests/bin/nomagic_probe/src/lib/printf.o
-
 
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 # ! ! ! ! ALL CONFIGURATION SETTINGS ARE ABOVE THIS LINE  ! ! ! !
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 include nomagic_probe/nomagic_probe.mk
+include tests/tests.mk
 
 SRC += $(SRC_FOLDER)rp2040.c
 
@@ -91,7 +70,6 @@ INCDIRS +=$(NOMAGIC_FOLDER)src/probe_api/
 INCDIRS +=$(SRC_FOLDER)
 
 # make config
-# remove ?  VPATH = $(SOURCE_DIR)
 .DEFAULT_GOAL = all
 
 
@@ -149,7 +127,7 @@ $(BIN_FOLDER)$(PROJECT).uf2: $(BIN_FOLDER)$(PROJECT).elf
 	@echo "=========="
 	elf2uf2 -f 0xe48bff56 -p 256 -i $(BIN_FOLDER)$(PROJECT).elf
 
-all: $(BIN_FOLDER)$(PROJECT).uf2
+all: $(BIN_FOLDER)$(PROJECT).uf2 $(BIN_FOLDER)$(PROJECT).bin
 	@echo ""
 	@echo "size"
 	@echo "===="
@@ -175,38 +153,6 @@ doc:
 	@echo "doxygen"
 	@echo "========"
 	doxygen
-
-tests/bin/src/cli/cli.o: src/cli/cli.c
-	@echo ""
-	@echo "=== compiling (tests) $@"
-	@$(MKDIR_P) $(@D)
-	@echo "#define VERSION \"x.x.x\"" > tests/bin/version.h
-	$(TST_CC) $(TST_CFLAGS) $(TST_DDEFS) $(TST_INCDIR) $< -o $@
-
-tests/bin/%o: %c
-	@echo ""
-	@echo "=== compiling (tests) $@"
-	@$(MKDIR_P) $(@D)
-	$(TST_CC) $(TST_CFLAGS) $(TST_DDEFS) $(TST_INCDIR) $< -o $@
-
-$(PROJECT)_tests: $(TST_OBJS)
-	@echo ""
-	@echo "linking tests"
-	@echo "============="
-	$(TST_LD) $(TST_LFLAGS) -o tests/bin/$(PROJECT)_tests $(TST_OBJS)
-
-
-test: $(PROJECT)_tests
-	@echo ""
-	@echo "executing tests"
-	@echo "==============="
-	tests/bin/$(PROJECT)_tests
-
-lcov: 
-# --exclude patterns match agains absolute file name, therefore they need to start with * to match the unknown working directory
-	lcov --directory tests/ -c -o tests/bin/lcov.info --exclude "*/tests/*" --exclude "*/src/*" --exclude "*/usr/include/*"
-	genhtml -o test_coverage -t "coverage" --num-spaces 4 tests/bin/lcov.info -o tests/bin/test_coverage/
-
 
 clean:
 	@rm -rf $(BIN_FOLDER)/* tests/$(PROJECT)_tests tests/bin/ $(CLEAN_RM)
