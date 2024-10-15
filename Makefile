@@ -56,6 +56,7 @@ HAS_DEBUG_CDC = no
 HAS_CLI = yes
 HAS_GDB_SERVER = yes
 HAS_NCM = yes
+USE_BOOT_ROM = no
 
 
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
@@ -65,6 +66,7 @@ include nomagic_probe/nomagic_probe.mk
 include tests/tests.mk
 
 SRC += $(SRC_FOLDER)rp2040.c
+SRC += $(SRC_FOLDER)rp2040_flash_driver.c
 
 INCDIRS +=$(NOMAGIC_FOLDER)src/probe_api/
 INCDIRS +=$(SRC_FOLDER)
@@ -119,7 +121,7 @@ flash: $(BIN_FOLDER)$(PROJECT).elf
 	@echo ""
 	@echo "flashing"
 	@echo "========"
-	openocd  -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "program $(BIN_FOLDER)$(PROJECT).elf verify reset exit"
+	openocd  -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000" -c "program $(BIN_FOLDER)$(PROJECT).elf verify reset exit"
 
 $(BIN_FOLDER)$(PROJECT).uf2: $(BIN_FOLDER)$(PROJECT).elf
 	@echo ""

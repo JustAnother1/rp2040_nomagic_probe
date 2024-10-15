@@ -17,6 +17,7 @@ TEST_EXECUTEABLES = $(TEST_BIN_FOLDER)rp2040
 RP2040_OBJS =                                                          \
  $(TEST_BIN_FOLDER)rp2040_tests.o                                      \
  $(TEST_BIN_FOLDER)source/rp2040.o                                     \
+ $(TEST_BIN_FOLDER)mock_flash_driver.o                                 \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/gdbserver/gdbserver_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o          \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
@@ -38,7 +39,6 @@ $(TEST_BIN_FOLDER)unity/%.o: tests/unity/%.c
 	@echo "=== compiling (unity) $@"
 	@$(MKDIR_P) $(@D)
 	$(TST_CC) $(TST_CFLAGS) $(TST_DDEFS) $(TST_INCDIR) $< -o $@
-
 
 # Tests
 $(TEST_BIN_FOLDER)%.o: tests/%.c
