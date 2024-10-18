@@ -151,7 +151,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_
     }
 
     // finish erasing the flash
-    res = flash_driver_erase_finish();
+    res = flash_driver_erase_finish(action);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time
@@ -169,7 +169,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_
     }
 
     // finish writing to flash
-    res = flash_driver_write_finish();
+    res = flash_driver_write_finish(action);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time
@@ -217,7 +217,7 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
         debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx", start_address, length);
     }
 
-    res = flash_driver_add_erase_range(start_address, length);
+    res = flash_driver_add_erase_range(action, start_address, length);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time

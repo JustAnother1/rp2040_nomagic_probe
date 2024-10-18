@@ -15,10 +15,10 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include "flash_actions.h"
 #include "probe_api/debug_log.h"
 #include "probe_api/result.h"
 #include "rp2040_flash_driver.h"
-
 
 
 static bool flash_initialized;
@@ -34,12 +34,6 @@ static uint32_t write_end_address;
 static uint8_t  write_buffer[256];
 static uint32_t bytes_in_buffer;
 
-static Result flash_erase_32kb(uint32_t start_address);
-static Result flash_erase_4kb(uint32_t start_address);
-static Result flash_erase_64kb(uint32_t start_address);
-static Result flash_write_page(uint32_t start_address, uint8_t* data , uint32_t length);
-static Result flash_initialize(void);
-
 
 void flash_driver_init(void)
 {
@@ -48,14 +42,14 @@ void flash_driver_init(void)
     flash_writing_ongoing = false;
 }
 
-Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
+Result flash_driver_add_erase_range(action_data_typ* const action, uint32_t start_address, uint32_t length)
 {
     if(false == flash_erase_ongoing)
     {
         // first erase command
         if(false == flash_initialized)
         {
-            Result res = flash_initialize();
+            Result res = flash_initialize(action);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -78,7 +72,7 @@ Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
         if(length > (64 * 1024))
         {
             // do block 64kB erase
-            Result res = flash_erase_64kb(erase_start_address);
+            Result res = flash_erase_64kb(action, erase_start_address);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -117,7 +111,7 @@ Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
             if(((erase_end_address + length) - erase_done_up_to) > (64 * 1024))
             {
                 // do block 64kB erase
-                Result res = flash_erase_64kb(erase_done_up_to);
+                Result res = flash_erase_64kb(action, erase_done_up_to);
                 if(ERR_NOT_COMPLETED == res)
                 {
                     // Try again next time
@@ -144,7 +138,7 @@ Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
         {
             // start of new erase in different area
             // 1. finish last erase
-            Result res = flash_driver_erase_finish();
+            Result res = flash_driver_erase_finish(action);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -164,7 +158,7 @@ Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
                 if(length > (64 * 1024))
                 {
                     // do block 64kB erase
-                    res = flash_erase_64kb(erase_start_address);
+                    res = flash_erase_64kb(action, erase_start_address);
                     if(ERR_NOT_COMPLETED == res)
                     {
                         // Try again next time
@@ -203,7 +197,7 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
     if(true == flash_erase_ongoing)
     {
         // finish erasing the flash
-        res = flash_driver_erase_finish();
+        res = flash_driver_erase_finish(action);
         if(ERR_NOT_COMPLETED == res)
         {
             // Try again next time
@@ -220,10 +214,27 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
     if(false == flash_writing_ongoing)
     {
         // first write command
+        if(false == flash_initialized)
+        {
+            res = flash_initialize(action);
+            if(ERR_NOT_COMPLETED == res)
+            {
+                // Try again next time
+                return res;
+            }
+            if(RESULT_OK != res)
+            {
+                flash_erase_ongoing = false;
+                debug_line("ERROR: flash initialization failed !");
+                return res;
+            }
+            // OK
+            flash_initialized = true;
+        }
         write_start_address = start_address;
         while(length > 255)
         {
-            res = flash_write_page(write_start_address, data, 256);
+            res = flash_write_page(action, write_start_address, data, 256);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -264,7 +275,7 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
                         memcpy(&write_buffer[bytes_in_buffer], data, 256 - bytes_in_buffer);
                         bytes_in_buffer = 256; // copy only once
                     }
-                    res = flash_write_page(write_start_address, write_buffer, 256);
+                    res = flash_write_page(action, write_start_address, write_buffer, 256);
                     if(ERR_NOT_COMPLETED == res)
                     {
                         // Try again next time
@@ -292,7 +303,7 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
 
             if((length - action->intern[INTERN_ALREADY_WRITTEN_BYTES]) > 255)
             {
-                res = flash_write_page(write_start_address, &data[action->intern[INTERN_ALREADY_WRITTEN_BYTES]], 256);
+                res = flash_write_page(action, write_start_address, &data[action->intern[INTERN_ALREADY_WRITTEN_BYTES]], 256);
                 if(ERR_NOT_COMPLETED == res)
                 {
                     // Try again next time
@@ -327,7 +338,7 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
         {
             // writing to another area
             // -> just finish the old one
-            res = flash_write_page(write_start_address, write_buffer, bytes_in_buffer);
+            res = flash_write_page(action, write_start_address, write_buffer, bytes_in_buffer);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -347,7 +358,7 @@ Result flash_driver_write(action_data_typ* const action, uint32_t start_address,
     return RESULT_OK;
 }
 
-Result flash_driver_erase_finish(void)
+Result flash_driver_erase_finish(action_data_typ* const action)
 {
     if(true == flash_erase_ongoing)
     {
@@ -356,7 +367,7 @@ Result flash_driver_erase_finish(void)
         if(length > (64 * 1024))
         {
             // do block 64kB erase
-            Result res = flash_erase_64kb(erase_done_up_to);
+            Result res = flash_erase_64kb(action, erase_done_up_to);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -377,7 +388,7 @@ Result flash_driver_erase_finish(void)
         else if(length > (32 * 1024))
         {
             // do block 32kB erase
-            Result res = flash_erase_32kb(erase_done_up_to);
+            Result res = flash_erase_32kb(action, erase_done_up_to);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -398,7 +409,7 @@ Result flash_driver_erase_finish(void)
         else if(length > 0)
         {
             // do block 4kB erase
-            Result res = flash_erase_4kb(erase_done_up_to);
+            Result res = flash_erase_4kb(action, erase_done_up_to);
             if(ERR_NOT_COMPLETED == res)
             {
                 // Try again next time
@@ -436,12 +447,12 @@ Result flash_driver_erase_finish(void)
     }
 }
 
-Result flash_driver_write_finish(void)
+Result flash_driver_write_finish(action_data_typ* const action)
 {
     if(true == flash_writing_ongoing)
     {
         // finish writing to flash
-        Result res = flash_write_page(write_start_address, write_buffer, bytes_in_buffer);
+        Result res = flash_write_page(action, write_start_address, write_buffer, bytes_in_buffer);
         if(ERR_NOT_COMPLETED == res)
         {
             // Try again next time
@@ -463,44 +474,5 @@ Result flash_driver_write_finish(void)
     {
         // write already finished
     }
-    return RESULT_OK;
-}
-
-
-
-
-static Result flash_initialize(void)
-{
-    // TODO erase sector of size 64KB
-    return RESULT_OK;
-}
-
-static Result flash_erase_64kb(uint32_t start_address)
-{
-    // TODO erase sector of size 64KB
-    (void)start_address;
-    return RESULT_OK;
-}
-
-static Result flash_erase_32kb(uint32_t start_address)
-{
-    // TODO erase sector of size 32KB
-    (void)start_address;
-    return RESULT_OK;
-}
-
-static Result flash_erase_4kb(uint32_t start_address)
-{
-    // TODO erase sector of size 4KB
-    (void)start_address;
-    return RESULT_OK;
-}
-
-static Result flash_write_page(uint32_t start_address, uint8_t* data , uint32_t length)
-{
-    // TODO
-    (void)start_address;
-    (void)data;
-    (void)length;
     return RESULT_OK;
 }

@@ -13,20 +13,17 @@
  *
  */
 
-#ifndef SOURCE_RP2040_FLASH_DRIVER_H_
-#define SOURCE_RP2040_FLASH_DRIVER_H_
+#ifndef SOURCE_FLASH_ACTIONS_H_
+#define SOURCE_FLASH_ACTIONS_H_
 
 #include <stdint.h>
 #include "probe_api/common.h"
 #include "probe_api/result.h"
 
-#define INTERN_ALREADY_WRITTEN_BYTES  0
+Result flash_erase_32kb(action_data_typ* const action, uint32_t start_address);
+Result flash_erase_4kb(action_data_typ* const action, uint32_t start_address);
+Result flash_erase_64kb(action_data_typ* const action, uint32_t start_address);
+Result flash_write_page(action_data_typ* const action, uint32_t start_address, uint8_t* data , uint32_t length);
+Result flash_initialize(action_data_typ* const action);
 
-void flash_driver_init(void);
-Result flash_driver_add_erase_range(action_data_typ* const action, uint32_t start_address, uint32_t length);
-Result flash_driver_write(action_data_typ* const action, uint32_t start_address, uint32_t length, uint8_t* data);
-Result flash_driver_erase_finish(action_data_typ* const action);
-Result flash_driver_write_finish(action_data_typ* const action);
-
-
-#endif /* SOURCE_RP2040_FLASH_DRIVER_H_ */
+#endif /* SOURCE_FLASH_ACTIONS_H_ */
