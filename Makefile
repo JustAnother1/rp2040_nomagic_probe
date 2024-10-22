@@ -44,6 +44,9 @@ TST_LD = cc
 #
 # - HAS_NCM = yes
 #       USB Network interface. Allows other interfaces to be available as TCP Ports.
+#
+# - USE_BOOT_ROM = yes
+#       use the functions stored in the boot rom in the RP2040 to access the QSPI flash.
 
 BIN_FOLDER = build/
 SRC_FOLDER = source/
