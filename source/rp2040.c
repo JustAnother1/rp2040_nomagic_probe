@@ -141,13 +141,14 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len)
 }
 
 // GDB_CMD_VFLASH_DONE
-Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_call)
+Result handle_target_reply_vFlashDone(action_data_typ* const action)
 {
     Result res;
 
-    if(true == first_call)
+    if(true == action->first_call)
     {
         debug_line("Flash Done!");
+        action->first_call = false;
     }
 
     // finish erasing the flash
@@ -194,7 +195,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action, bool first_
 }
 
 // GDB_CMD_VFLASH_ERASE
-Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first_call)
+Result handle_target_reply_vFlashErase(action_data_typ* const action)
 {
     Result res;
     uint32_t start_address = action->gdb_parameter.address_length.address;
@@ -212,9 +213,10 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
         return ERR_WRONG_VALUE;
     }
 
-    if(true == first_call)
+    if(true == action->first_call)
     {
         debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx", start_address, length);
+        action->first_call = false;
     }
 
     res = flash_driver_add_erase_range(action, start_address, length);
@@ -241,7 +243,7 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action, bool first
 }
 
 // GDB_CMD_VFLASH_WRITE
-Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first_call)
+Result handle_target_reply_vFlashWrite(action_data_typ* const action)
 {
     Result res;
     uint32_t start_address = action->gdb_parameter.address_binary.address;
@@ -260,11 +262,12 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action, bool first
         return ERR_WRONG_VALUE;
     }
 
-    if(true == first_call)
+    if(true == action->first_call)
     {
         debug_line("Flash write: address : 0x%08lx", start_address);
         debug_line("Flash write: length : %ld", length);
         action->intern[INTERN_ALREADY_WRITTEN_BYTES] = 0;
+        action->first_call = false;
     }
 
     res = flash_driver_write(action, start_address, length, data);
