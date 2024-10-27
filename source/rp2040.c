@@ -161,8 +161,6 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
     if(RESULT_OK != res)
     {
         debug_line("ERROR: finishing erase failed !");
-        action->result = ERR_TARGET_ERROR;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
@@ -179,8 +177,6 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
     if(RESULT_OK != res)
     {
         debug_line("ERROR: finishing write failed !");
-        action->result = ERR_TARGET_ERROR;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
@@ -205,8 +201,6 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     {
         // wrong parameter type
         debug_line("ERROR: wrong parameter type !");
-        action->result = ERR_WRONG_VALUE;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
         reply_packet_send();
@@ -228,14 +222,13 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     if(RESULT_OK != res)
     {
         debug_line("ERROR: adding erase range failed !");
-        action->result = ERR_TARGET_ERROR;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
         return res;
     }
 
+    // driver finished with RESULT_OK -> send OK
     reply_packet_prepare();
     reply_packet_add("OK");
     reply_packet_send();
@@ -254,8 +247,6 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     {
         // wrong parameter type
         debug_line("ERROR: wrong parameter type !");
-        action->result = ERR_WRONG_VALUE;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
         reply_packet_send();
@@ -279,14 +270,13 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     if(RESULT_OK != res)
     {
         debug_line("ERROR: flash write failed !");
-        action->result = ERR_TARGET_ERROR;
-        action->is_done = true;
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
         return res;
     }
 
+    // driver finished with RESULT_OK -> send OK
     reply_packet_prepare();
     reply_packet_add("OK");
     reply_packet_send();
