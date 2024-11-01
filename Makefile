@@ -61,6 +61,7 @@ HAS_GDB_SERVER = yes
 HAS_NCM = yes
 USE_BOOT_ROM = no
 
+DDEFS = -DLOOP_MONITOR=1
 
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 # ! ! ! ! ALL CONFIGURATION SETTINGS ARE ABOVE THIS LINE  ! ! ! !
