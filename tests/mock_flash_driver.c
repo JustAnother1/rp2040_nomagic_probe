@@ -22,16 +22,17 @@ void flash_driver_init(void)
 
 }
 
-Result flash_driver_add_erase_range(uint32_t start_address, uint32_t length)
+Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length)
 {
+    (void)state;
     (void)start_address;
     (void)length;
     return RESULT_OK;
 }
 
-Result flash_driver_write(action_data_typ* const action, uint32_t start_address, uint32_t length, uint8_t* data)
+Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length, uint8_t* data)
 {
-    (void)action;
+    (void)state;
     (void)start_address;
     (void)length;
     (void)data;
@@ -43,7 +44,8 @@ Result flash_driver_erase_finish(void)
     return RESULT_OK;
 }
 
-Result flash_driver_write_finish(void)
+Result flash_driver_write_finish(flash_driver_data_typ* const state)
 {
+    (void)state;
     return RESULT_OK;
 }

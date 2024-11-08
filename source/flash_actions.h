@@ -20,10 +20,15 @@
 #include "probe_api/common.h"
 #include "probe_api/result.h"
 
-Result flash_erase_32kb(action_data_typ* const action, uint32_t start_address);
-Result flash_erase_4kb(action_data_typ* const action, uint32_t start_address);
-Result flash_erase_64kb(action_data_typ* const action, uint32_t start_address);
-Result flash_write_page(action_data_typ* const action, uint32_t start_address, uint8_t* data , uint32_t length);
-Result flash_initialize(action_data_typ* const action);
+typedef struct {
+    uint32_t phase;
+    bool first_call;
+} flash_action_data_typ;
+
+Result flash_erase_32kb(flash_action_data_typ* const state, uint32_t start_address);
+Result flash_erase_4kb(flash_action_data_typ* const state, uint32_t start_address);
+Result flash_erase_64kb(flash_action_data_typ* const state, uint32_t start_address);
+Result flash_write_page(flash_action_data_typ* const state, uint32_t start_address, uint8_t* data , uint32_t length);
+Result flash_initialize(flash_action_data_typ* const state);
 
 #endif /* SOURCE_FLASH_ACTIONS_H_ */

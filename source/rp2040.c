@@ -68,6 +68,9 @@
 "</memory-map>\r\n"
 
 
+static flash_driver_data_typ flash_driver_state;
+
+
 void target_init(void)
 {
     flash_driver_init();
@@ -145,49 +148,68 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
 {
     Result res;
 
+    if(NULL == action)
+    {
+        return ERR_ACTION_NULL;
+    }
+
     if(true == action->first_call)
     {
         debug_line("Flash Done!");
         action->first_call = false;
+        action->cur_phase = 0;
+        flash_driver_state.first_call = true;
     }
 
-    // finish erasing the flash
-    res = flash_driver_erase_finish(action);
-    if(ERR_NOT_COMPLETED == res)
+    if(0 == action->cur_phase)
     {
-        // Try again next time
-        return res;
+        // finish erasing the flash
+        res = flash_driver_erase_finish(&flash_driver_state);
+        if(ERR_NOT_COMPLETED == res)
+        {
+            // Try again next time
+            return res;
+        }
+        if(RESULT_OK != res)
+        {
+            debug_line("ERROR: finishing erase failed !");
+            reply_packet_prepare();
+            reply_packet_add(ERROR_TARGET_FAILED);
+            reply_packet_send();
+            return res;
+        }
+        action->cur_phase++;
+        flash_driver_state.first_call = true;
+        return ERR_NOT_COMPLETED;
     }
-    if(RESULT_OK != res)
+
+
+    if(1 == action->cur_phase)
     {
-        debug_line("ERROR: finishing erase failed !");
+        // finish writing to flash
+        res = flash_driver_write_finish(&flash_driver_state);
+        if(ERR_NOT_COMPLETED == res)
+        {
+            // Try again next time
+            return res;
+        }
+        if(RESULT_OK != res)
+        {
+            debug_line("ERROR: finishing write failed !");
+            reply_packet_prepare();
+            reply_packet_add(ERROR_TARGET_FAILED);
+            reply_packet_send();
+            return res;
+        }
+
+        // erase + write has finished now -> send OK
         reply_packet_prepare();
-        reply_packet_add(ERROR_TARGET_FAILED);
+        reply_packet_add("OK");
         reply_packet_send();
-        return res;
+        return RESULT_OK;
     }
 
-    // finish writing to flash
-    res = flash_driver_write_finish(action);
-    if(ERR_NOT_COMPLETED == res)
-    {
-        // Try again next time
-        return res;
-    }
-    if(RESULT_OK != res)
-    {
-        debug_line("ERROR: finishing write failed !");
-        reply_packet_prepare();
-        reply_packet_add(ERROR_TARGET_FAILED);
-        reply_packet_send();
-        return res;
-    }
-
-    // erase + write has finished now -> send OK
-    reply_packet_prepare();
-    reply_packet_add("OK");
-    reply_packet_send();
-    return RESULT_OK;
+    return ERR_WRONG_STATE;
 }
 
 // GDB_CMD_VFLASH_ERASE
@@ -196,6 +218,11 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     Result res;
     uint32_t start_address = action->gdb_parameter.address_length.address;
     uint32_t length = action->gdb_parameter.address_length.length;
+
+    if(NULL == action)
+    {
+        return ERR_ACTION_NULL;
+    }
 
     if(ADDRESS_LENGTH != action->gdb_parameter.type)
     {
@@ -211,9 +238,10 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     {
         debug_line("Flash erase: address : 0x%08lx, length: 0x%08lx", start_address, length);
         action->first_call = false;
+        flash_driver_state.first_call = true;
     }
 
-    res = flash_driver_add_erase_range(action, start_address, length);
+    res = flash_driver_add_erase_range(&flash_driver_state, start_address, length);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time
@@ -243,6 +271,11 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     uint32_t length = action->gdb_parameter.address_binary.data_length; // length can be up to MAX_BINARY_SIZE_BYTES
     uint8_t* data = (uint8_t*)action->gdb_parameter.address_binary.data;
 
+    if(NULL == action)
+    {
+        return ERR_ACTION_NULL;
+    }
+
     if(ADDRESS_MEMORY != action->gdb_parameter.type)
     {
         // wrong parameter type
@@ -259,9 +292,10 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
         debug_line("Flash write: length : %ld", length);
         action->intern[INTERN_ALREADY_WRITTEN_BYTES] = 0;
         action->first_call = false;
+        flash_driver_state.first_call = true;
     }
 
-    res = flash_driver_write(action, start_address, length, data);
+    res = flash_driver_write(&flash_driver_state, start_address, length, data);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time

@@ -22,11 +22,17 @@
 
 #define INTERN_ALREADY_WRITTEN_BYTES  0
 
+typedef struct {
+    uint32_t phase;
+    bool first_call;
+} flash_driver_data_typ;
+
+
 void flash_driver_init(void);
-Result flash_driver_add_erase_range(action_data_typ* const action, uint32_t start_address, uint32_t length);
-Result flash_driver_write(action_data_typ* const action, uint32_t start_address, uint32_t length, uint8_t* data);
-Result flash_driver_erase_finish(action_data_typ* const action);
-Result flash_driver_write_finish(action_data_typ* const action);
+Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length);
+Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length, uint8_t* data);
+Result flash_driver_erase_finish(flash_driver_data_typ* const state);
+Result flash_driver_write_finish(flash_driver_data_typ* const state);
 
 
 #endif /* SOURCE_RP2040_FLASH_DRIVER_H_ */
