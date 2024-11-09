@@ -57,7 +57,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         act_state.first_call =true;
     }
 
-    debug_line("f%ld", state->phase);
+    //debug_line("f%ld", state->phase);
 
     // power on QSPI
     if(0 == state->phase)
@@ -856,10 +856,49 @@ Result flash_initialize(flash_action_data_typ* const state)
         }
     }
 
-    if(   (52 == state->phase)
-       || (53 == state->phase)
-       || (54 == state->phase)
-       || (55 == state->phase) )
+    if(52 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(53 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(54 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(55 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->DR0), 0);
 
@@ -904,7 +943,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             act_state.first_call =true;
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1012,10 +1051,49 @@ Result flash_initialize(flash_action_data_typ* const state)
         }
     }
 
-    if(   (64 == state->phase)
-       || (65 == state->phase)
-       || (66 == state->phase)
-       || (67 == state->phase) )
+    if(64 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(65 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(66 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(67 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->DR0), 0);
 
@@ -1062,7 +1140,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             act_state.first_call =true;
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1237,8 +1315,21 @@ Result flash_initialize(flash_action_data_typ* const state)
         }
     }
 
-    if(   (79 == state->phase)
-       || (80 == state->phase) )
+    if(79 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0xff);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(80 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->DR0), 0xff);
 
@@ -1283,7 +1374,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             act_state.first_call =true;
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1352,6 +1443,8 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         act_state.first_call =true;
     }
 
+    // debug_line("f%ld", state->phase);
+
     if(0 == state->phase)
     {
         res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), (2 << IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_OFFSET));
@@ -1409,7 +1502,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1539,7 +1632,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1599,6 +1692,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
             else if(0 == val)
             {
                 state->phase = 13; // read RXFLR again
+                return ERR_NOT_COMPLETED;
             }
             else
             {
@@ -1711,7 +1805,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1749,6 +1843,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         {
             // still busy
             state->phase = 15; // go back to start of loop
+            return ERR_NOT_COMPLETED;
         }
         else
         {
@@ -1774,14 +1869,17 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         // write up to 256 bytes
         if(start_address < 0x1000000)
         {
+            debug_line("ERROR: invalid start address");
             return ERR_WRONG_VALUE;
         }
         if(0 != (start_address & 0xffu))
         {
+            debug_line("ERROR: start address not alligned");
             return ERR_WRONG_VALUE;
         }
         if(256 < length)
         {
+            debug_line("ERROR: write too short");
             return ERR_WRONG_VALUE;
         }
 
@@ -1847,7 +1945,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -1976,6 +2074,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
             else if(0 == val)
             {
                 state->phase = 13; // read RXFLR again
+                return ERR_NOT_COMPLETED;
             }
             else
             {
@@ -2117,7 +2216,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
@@ -2249,7 +2348,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            if(XIP_SSI_SR_BUSY_MASK == (val & XIP_SSI_SR_BUSY_MASK))
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;

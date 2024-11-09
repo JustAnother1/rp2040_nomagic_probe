@@ -504,7 +504,16 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
             // -> just finish the old one
             if(1 == state->phase)
             {
-                res = flash_write_page(&action_state, write_start_address, write_buffer, bytes_in_buffer);
+                if(bytes_in_buffer < 256)
+                {
+                    uint32_t i;
+                    for(i = bytes_in_buffer; i < 256; i++)
+                    {
+                        write_buffer[i] = 0xff;
+                    }
+                    bytes_in_buffer = 256;
+                }
+                res = flash_write_page(&action_state, write_start_address, write_buffer, 256);
                 if(ERR_NOT_COMPLETED == res)
                 {
                     // Try again next time
@@ -655,6 +664,15 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
     if(true == flash_writing_ongoing)
     {
         // finish writing to flash
+        if(bytes_in_buffer < 256)
+        {
+            uint32_t i;
+            for(i = bytes_in_buffer; i < 256; i++)
+            {
+                write_buffer[i] = 0xff;
+            }
+            bytes_in_buffer = 256;
+        }
         Result res = flash_write_page(&action_state, write_start_address, write_buffer, bytes_in_buffer);
         if(ERR_NOT_COMPLETED == res)
         {
