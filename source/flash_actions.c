@@ -1437,7 +1437,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
 
     if(true == state->first_call)
     {
-        debug_line("starting flash_erase(0x%02lx)", erase_cmd);
+        debug_line("starting flash_erase(0x%02lx @0x%08lx)", erase_cmd, start_address);
         state->phase = 0;
         state->first_call = false;
         act_state.first_call =true;
@@ -1865,21 +1865,21 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 
     if(true == state->first_call)
     {
-        debug_line("starting flash_write_page(%ld)", length);
+        debug_line("starting flash_write_page(@0x%08lx %ld)", start_address, length);
         // write up to 256 bytes
-        if(start_address < 0x1000000)
+        if(start_address < 0x10000000)
         {
-            debug_line("ERROR: invalid start address");
+            debug_line("ERROR: invalid start address(0x%08lx)", start_address);
             return ERR_WRONG_VALUE;
         }
         if(0 != (start_address & 0xffu))
         {
-            debug_line("ERROR: start address not alligned");
+            debug_line("ERROR: start address not aligned (0x%08lx)", start_address);
             return ERR_WRONG_VALUE;
         }
         if(256 < length)
         {
-            debug_line("ERROR: write too short");
+            debug_line("ERROR: write too short (%ld)", length);
             return ERR_WRONG_VALUE;
         }
 

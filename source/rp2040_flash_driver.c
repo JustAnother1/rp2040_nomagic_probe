@@ -271,6 +271,7 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
         state->first_call = false;
         state->phase = 0;
         already_written_bytes = 0;
+        debug_line("Flash driver write: @0x%08lx len %ld", start_address, length);
     }
 
     if(0 == state->phase)
@@ -392,8 +393,14 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
         // another write command
         if(start_address == write_end_address)
         {
-            // we continue the last write
             if(1 == state->phase)
+            {
+                debug_line("INFO: another write command !");
+                state->phase++;
+                write_end_address = write_end_address + length;
+            }
+            // we continue the last write
+            if(2 == state->phase)
             {
                 if(0 < bytes_in_buffer)
                 {
@@ -429,7 +436,6 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
                         // not enough new bytes for a page write -> waiting for more
                         memcpy(&write_buffer[bytes_in_buffer], data, length);
                         bytes_in_buffer = bytes_in_buffer + length;
-                        write_end_address = write_end_address + length;
                         return RESULT_OK;
                     }
                 }
@@ -438,7 +444,7 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
                 return ERR_NOT_COMPLETED;
             }
 
-            if(2 == state->phase)
+            if(3 == state->phase)
             {
                 if((length - already_written_bytes + bytes_in_buffer) > 255)
                 {
@@ -491,7 +497,6 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
                 {
                     // no more bytes
                     flash_writing_ongoing = false;
-                    write_end_address = write_end_address + length;
                     return RESULT_OK;
                 }
             }
@@ -503,6 +508,14 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
             // writing to another area
             // -> just finish the old one
             if(1 == state->phase)
+            {
+                debug_line("INFO: writing to a new area !");
+                // if(start_address == write_end_address)
+                debug_line("start_address     : 0x%08lx", start_address);
+                debug_line("write_end_address : 0x%08lx", write_end_address);
+                state->phase++;
+            }
+            if(2 == state->phase)
             {
                 if(bytes_in_buffer < 256)
                 {
@@ -527,6 +540,7 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
                 }
                 bytes_in_buffer = 0;
                 // next time this will be a "continue last write"
+                write_end_address = start_address;
                 write_start_address = start_address;
                 action_state.first_call = true;
                 return ERR_NOT_COMPLETED;
@@ -659,6 +673,7 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
         action_state.first_call = true;
         state->first_call = false;
         state->phase = 0;
+        debug_line("Finishing write,...");
     }
 
     if(true == flash_writing_ongoing)
