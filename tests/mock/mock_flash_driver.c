@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include "probe_api/common.h"
 #include "probe_api/result.h"
+#include "rp2040_flash_driver.h"
 
 void flash_driver_init(void)
 {
@@ -39,8 +40,9 @@ Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_add
     return RESULT_OK;
 }
 
-Result flash_driver_erase_finish(void)
+Result flash_driver_erase_finish(flash_driver_data_typ* const state)
 {
+    (void) state;
     return RESULT_OK;
 }
 

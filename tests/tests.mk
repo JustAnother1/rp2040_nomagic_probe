@@ -1,6 +1,8 @@
 TEST_BIN_FOLDER = $(BIN_FOLDER)test/
 TST_LFLAGS = -lgcov --coverage
-TST_CFLAGS =  -c -Wall -Wextra -g3 -fprofile-arcs -ftest-coverage -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
+TST_CFLAGS =  -c -Wall -Wextra -g3  
+TST_CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-update=atomic
+TST_CFLAGS += -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
 TST_DDEFS = -DUNIT_TEST=1
 TST_DDEFS += -DFEAT_DEBUG_UART
 TST_DDEFS += -DFEAT_GDB_SERVER
@@ -17,9 +19,18 @@ TEST_EXECUTEABLES = $(TEST_BIN_FOLDER)rp2040
 RP2040_OBJS =                                                          \
  $(TEST_BIN_FOLDER)rp2040_tests.o                                      \
  $(TEST_BIN_FOLDER)source/rp2040.o                                     \
- $(TEST_BIN_FOLDER)mock_flash_driver.o                                 \
+ $(TEST_BIN_FOLDER)mock/mock_flash_driver.o                            \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/gdbserver/gdbserver_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o          \
+ $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
+
+# rp2040_flash_driver
+TEST_EXECUTEABLES += $(TEST_BIN_FOLDER)rp2040_flash_driver
+RP2040_FLASH_DRIVER_OBJS =                                        \
+ $(TEST_BIN_FOLDER)rp2040_flash_driver_tests.o                    \
+ $(TEST_BIN_FOLDER)source/rp2040_flash_driver.o                   \
+ $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o     \
+ $(TEST_BIN_FOLDER)mock/flash_actions_mock.o                      \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
 
 TEST_LOGS = $(patsubst %,%.txt, $(TEST_EXECUTEABLES))
@@ -70,6 +81,16 @@ $(TEST_BIN_FOLDER)rp2040: $(RP2040_OBJS) $(FRAMEWORK_OBJS)
 	@echo "============================"
 	$(TST_LD) $(TST_LFLAGS) -o $(TEST_BIN_FOLDER)rp2040 $(RP2040_OBJS) $(FRAMEWORK_OBJS)
 
+$(TEST_BIN_FOLDER)rp2040_flash_driver: $(RP2040_FLASH_DRIVER_OBJS) $(FRAMEWORK_OBJS)
+	@echo ""
+	@echo "linking test: rp2040_flash_driver"
+	@echo "============================"
+	$(TST_LD) $(TST_LFLAGS) -o $(TEST_BIN_FOLDER)rp2040_flash_driver $(RP2040_FLASH_DRIVER_OBJS) $(FRAMEWORK_OBJS)
+
+
+
+
+
 # run all tests
 $(TEST_BIN_FOLDER)%.txt: $(TEST_BIN_FOLDER)%
 	@echo ""
@@ -91,6 +112,7 @@ test: $(TEST_LOGS)
 
 # coverage  #  --exclude "*/usr/include/*" 
 lcov: $(TEST_LOGS)
-	lcov  --directory $(TEST_BIN_FOLDER) -c -o $(TEST_BIN_FOLDER)lcov.info --exclude "*tests/*"
+	# there seems to be an gcc issue that causes the negative error -> ignore it
+	lcov  --directory $(TEST_BIN_FOLDER) -c -o $(TEST_BIN_FOLDER)lcov.info --exclude "*tests/*" --ignore-errors negative
 	genhtml -o test_coverage -t "coverage" --num-spaces 4 $(TEST_BIN_FOLDER)lcov.info -o $(TEST_BIN_FOLDER)test_coverage/
-
+	firefox build/test/test_coverage/index.html
