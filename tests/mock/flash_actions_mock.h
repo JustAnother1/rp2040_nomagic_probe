@@ -39,6 +39,7 @@ void set_expect_first_call_for_flash_write_page(bool val);
 uint32_t get_start_address_from_flash_write_page(void);
 uint32_t get_length_from_flash_write_page(void);
 uint8_t* get_data_ptr_from_flash_write_page(void);
+uint8_t* get_copied_data_from_flash_write_page(void);
 
 
 #endif /* MOCK_FLASH_ACTIONS_MOCK_H_ */

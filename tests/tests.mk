@@ -1,7 +1,7 @@
 TEST_BIN_FOLDER = $(BIN_FOLDER)test/
 TST_LFLAGS = -lgcov --coverage
 TST_CFLAGS =  -c -Wall -Wextra -g3  
-TST_CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-update=atomic
+#TST_CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-update=atomic
 TST_CFLAGS += -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
 TST_DDEFS = -DUNIT_TEST=1
 TST_DDEFS += -DFEAT_DEBUG_UART
@@ -10,6 +10,7 @@ TST_INCDIRS = tests/
 TST_INCDIRS = tests/unity/
 TST_INCDIRS += source/
 TST_INCDIRS += nomagic_probe/src/
+TST_INCDIRS += nomagic_probe/tests/
 
 TST_INCDIR = $(patsubst %,-I%, $(TST_INCDIRS))
 
@@ -22,6 +23,8 @@ RP2040_OBJS =                                                          \
  $(TEST_BIN_FOLDER)mock/mock_flash_driver.o                            \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/gdbserver/gdbserver_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o          \
+ $(TEST_BIN_FOLDER)nomagic_probe/src/lib/printf.o                      \
+ $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/hal/hw_divider_mock.o      \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
 
 # rp2040_flash_driver
@@ -31,6 +34,8 @@ RP2040_FLASH_DRIVER_OBJS =                                        \
  $(TEST_BIN_FOLDER)source/rp2040_flash_driver.o                   \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o     \
  $(TEST_BIN_FOLDER)mock/flash_actions_mock.o                      \
+ $(TEST_BIN_FOLDER)nomagic_probe/src/lib/printf.o                 \
+ $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/hal/hw_divider_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
 
 TEST_LOGS = $(patsubst %,%.txt, $(TEST_EXECUTEABLES))
@@ -65,6 +70,13 @@ $(TEST_BIN_FOLDER)nomagic_probe/tests/%.o: nomagic_probe/tests/%.c
 	@$(MKDIR_P) $(@D)
 	$(TST_CC) $(TST_CFLAGS) $(TST_DDEFS) $(TST_INCDIR) $< -o $@
 
+# code from nomagic_probe
+$(TEST_BIN_FOLDER)nomagic_probe/src/%.o: nomagic_probe/src/%.c
+	@echo ""
+	@echo "=== compiling (nomagic mock) $@"
+	@$(MKDIR_P) $(@D)
+	$(TST_CC) $(TST_CFLAGS) $(TST_DDEFS) $(TST_INCDIR) $< -o $@
+
 
 # source code module to Test
 $(TEST_BIN_FOLDER)source/%.o: source/%.c
@@ -92,6 +104,12 @@ $(TEST_BIN_FOLDER)rp2040_flash_driver: $(RP2040_FLASH_DRIVER_OBJS) $(FRAMEWORK_O
 
 
 # run all tests
+# the "-" causes make to ignore the return code
+# the return code is 1 if the tests had an error
+# the return code is 139 if a core dump happened
+# we than extract the eroor messages from the test_logs.
+# in case of a core dump we get a test file, but that does not contain an error messages that we recognize
+# -> that is bad !
 $(TEST_BIN_FOLDER)%.txt: $(TEST_BIN_FOLDER)%
 	@echo ""
 	@echo "=== running test $@"

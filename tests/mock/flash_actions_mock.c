@@ -13,6 +13,7 @@
  *
  */
 #include <stddef.h>
+#include <string.h>
 #include "flash_actions_mock.h"
 #include "flash_actions.h"
 
@@ -36,6 +37,8 @@ bool flash_write_page_expect_first_call = false;
 uint32_t flash_write_page_received_start_address = 1;
 uint32_t flash_write_page_received_length = 2;
 uint8_t* flash_write_page_received_data_ptr = NULL;
+
+uint8_t buffer[256];
 
 Result flash_erase_32kb(flash_action_data_typ* const state, uint32_t start_address)
 {
@@ -223,6 +226,12 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
     flash_write_page_received_start_address = start_address;
     flash_write_page_received_length = length;
     flash_write_page_received_data_ptr = data;
+    if(256 < length)
+    {
+        length = 256;
+    }
+    memset(buffer, 0x23, 256);
+    memcpy(buffer, data, length);
     return res_flash_write_page;
 }
 
@@ -249,6 +258,11 @@ uint32_t get_length_from_flash_write_page(void)
 uint8_t* get_data_ptr_from_flash_write_page(void)
 {
     return flash_write_page_received_data_ptr;
+}
+
+uint8_t* get_copied_data_from_flash_write_page(void)
+{
+    return buffer;
 }
 
 Result flash_initialize(flash_action_data_typ* const state)
