@@ -31,12 +31,9 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
     return RESULT_OK;
 }
 
-Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length, uint8_t* data)
+Result flash_driver_write(flash_driver_data_typ* const state)
 {
     (void)state;
-    (void)start_address;
-    (void)length;
-    (void)data;
     return RESULT_OK;
 }
 
@@ -47,6 +44,12 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
 }
 
 Result flash_driver_write_finish(flash_driver_data_typ* const state)
+{
+    (void)state;
+    return RESULT_OK;
+}
+
+Result flash_driver_enter_xip_mode(flash_driver_data_typ* const state)
 {
     (void)state;
     return RESULT_OK;

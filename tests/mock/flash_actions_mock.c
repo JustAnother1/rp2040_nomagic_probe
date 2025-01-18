@@ -308,3 +308,9 @@ void set_expect_first_call_for_flash_initialize(bool val)
 {
     flash_initialize_expect_first_call = val;
 }
+
+Result flash_enter_XIP(flash_action_data_typ* const state)
+{
+    (void)state;
+    return RESULT_OK;
+}

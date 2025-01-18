@@ -1,7 +1,7 @@
 TEST_BIN_FOLDER = $(BIN_FOLDER)test/
 TST_LFLAGS = -lgcov --coverage
 TST_CFLAGS =  -c -Wall -Wextra -g3  
-#TST_CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-update=atomic
+TST_CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-update=atomic
 TST_CFLAGS += -Wno-int-to-pointer-cast -Wno-implicit-function-declaration -Wno-format
 TST_DDEFS = -DUNIT_TEST=1
 TST_DDEFS += -DFEAT_DEBUG_UART
@@ -21,6 +21,7 @@ RP2040_OBJS =                                                          \
  $(TEST_BIN_FOLDER)rp2040_tests.o                                      \
  $(TEST_BIN_FOLDER)source/rp2040.o                                     \
  $(TEST_BIN_FOLDER)mock/mock_flash_driver.o                            \
+ $(TEST_BIN_FOLDER)mock/mock_flash_write_buffer.o                      \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/gdbserver/gdbserver_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o          \
  $(TEST_BIN_FOLDER)nomagic_probe/src/lib/printf.o                      \
@@ -34,9 +35,17 @@ RP2040_FLASH_DRIVER_OBJS =                                        \
  $(TEST_BIN_FOLDER)source/rp2040_flash_driver.o                   \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o     \
  $(TEST_BIN_FOLDER)mock/flash_actions_mock.o                      \
+ $(TEST_BIN_FOLDER)mock/mock_flash_write_buffer.o                 \
  $(TEST_BIN_FOLDER)nomagic_probe/src/lib/printf.o                 \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/hal/hw_divider_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/target/common_mock.o
+
+# flash_write_buffer
+TEST_EXECUTEABLES += $(TEST_BIN_FOLDER)flash_write_buffer
+FLASH_WRITE_BUFFER_OBJS =                                         \
+ $(TEST_BIN_FOLDER)flash_write_buffer_tests.o                     \
+ $(TEST_BIN_FOLDER)source/flash_write_buffer.o
+
 
 TEST_LOGS = $(patsubst %,%.txt, $(TEST_EXECUTEABLES))
 
@@ -99,6 +108,11 @@ $(TEST_BIN_FOLDER)rp2040_flash_driver: $(RP2040_FLASH_DRIVER_OBJS) $(FRAMEWORK_O
 	@echo "============================"
 	$(TST_LD) $(TST_LFLAGS) -o $(TEST_BIN_FOLDER)rp2040_flash_driver $(RP2040_FLASH_DRIVER_OBJS) $(FRAMEWORK_OBJS)
 
+$(TEST_BIN_FOLDER)flash_write_buffer: $(FLASH_WRITE_BUFFER_OBJS) $(FRAMEWORK_OBJS)
+	@echo ""
+	@echo "linking test: flash_write_buffer"
+	@echo "============================"
+	$(TST_LD) $(TST_LFLAGS) -o $(TEST_BIN_FOLDER)flash_write_buffer $(FLASH_WRITE_BUFFER_OBJS) $(FRAMEWORK_OBJS)
 
 
 

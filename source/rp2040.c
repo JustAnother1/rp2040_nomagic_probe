@@ -13,6 +13,7 @@
  *
  */
 
+#include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -28,6 +29,7 @@
 #include "probe_api/swd.h"
 #include "probe_api/util.h"
 #include "rp2040_flash_driver.h"
+#include "flash_write_buffer.h"
 #include "target.h"
 
 // RP2040:
@@ -73,6 +75,7 @@ static flash_driver_data_typ flash_driver_state;
 
 void target_init(void)
 {
+    flash_write_buffer_init(256); // flash page size = 256 Bytes
     flash_driver_init();
     common_target_init();
 }
@@ -183,7 +186,6 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
         return ERR_NOT_COMPLETED;
     }
 
-
     if(1 == action->cur_phase)
     {
         // finish writing to flash
@@ -202,6 +204,28 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
             return res;
         }
 
+        action->cur_phase++;
+        flash_driver_state.first_call = true;
+        return ERR_NOT_COMPLETED;
+    }
+
+    if(2 == action->cur_phase)
+    {
+        // switch to XIP Mode
+        res = flash_driver_enter_xip_mode(&flash_driver_state);
+        if(ERR_NOT_COMPLETED == res)
+        {
+            // Try again next time
+            return res;
+        }
+        if(RESULT_OK != res)
+        {
+            debug_line("ERROR: finishing write failed !");
+            reply_packet_prepare();
+            reply_packet_add(ERROR_TARGET_FAILED);
+            reply_packet_send();
+            return res;
+        }
         // erase + write has finished now -> send OK
         reply_packet_prepare();
         reply_packet_add("OK");
@@ -295,7 +319,16 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
         flash_driver_state.first_call = true;
     }
 
-    res = flash_driver_write(&flash_driver_state, start_address, length, data);
+    res = flash_write_buffer_add_data(start_address, length, data);
+    if(RESULT_OK != res)
+    {
+        debug_line("ERROR: flash write buffer issue !");
+        reply_packet_prepare();
+        reply_packet_add(ERROR_TARGET_FAILED);
+        reply_packet_send();
+        return res;
+    }
+    res = flash_driver_write(&flash_driver_state);
     if(ERR_NOT_COMPLETED == res)
     {
         // Try again next time
@@ -308,6 +341,13 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
         return res;
+    }
+
+    if(true == flash_write_buffer_has_data_block())
+    {
+        // the buffer still has enough bytes for an additional write
+        // -> try again
+        return ERR_NOT_COMPLETED;
     }
 
     // driver finished with RESULT_OK -> send OK

@@ -30,9 +30,9 @@ typedef struct {
 
 void flash_driver_init(void);
 Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length);
-Result flash_driver_write(flash_driver_data_typ* const state, uint32_t start_address, uint32_t length, uint8_t* data);
+Result flash_driver_write(flash_driver_data_typ* const state);
 Result flash_driver_erase_finish(flash_driver_data_typ* const state);
 Result flash_driver_write_finish(flash_driver_data_typ* const state);
-
+Result flash_driver_enter_xip_mode(flash_driver_data_typ* const state);
 
 #endif /* SOURCE_RP2040_FLASH_DRIVER_H_ */
