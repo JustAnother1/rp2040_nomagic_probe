@@ -264,6 +264,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
 
     if(NULL == state)
     {
+        debug_line("ERROR: flash write: state is NULL !");
         return ERR_ACTION_NULL;
     }
 
@@ -343,6 +344,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             }
             // page was successfully written
             flash_write_buffer_remove_block();
+            return ERR_NOT_COMPLETED;
         }
         else
         {
@@ -372,6 +374,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
                 }
                 // page was successfully written
                 flash_write_buffer_remove_block();
+                return ERR_NOT_COMPLETED;
             }
         }
     }
@@ -571,6 +574,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
         }
     }*/
 
+    debug_line("ERROR: flash write: wrong state !");
     return ERR_WRONG_STATE;
 }
 
