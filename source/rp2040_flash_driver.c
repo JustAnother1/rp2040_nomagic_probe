@@ -578,7 +578,7 @@ Result flash_driver_enter_xip_mode(flash_driver_data_typ* const state)
     }
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: switching to XiP mode failed !");
+        debug_line("ERROR: switching to XiP mode failed (%ld in %ld)!", res, action_state.phase);
         return res;
     }
 

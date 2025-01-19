@@ -143,12 +143,12 @@ Result flash_initialize(flash_action_data_typ* const state)
         res = act_read_register(&act_state, &(RESETS->RESET), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             uint32_t reset_mask = (1 << RESETS_RESET_IO_QSPI_OFFSET) | (1 << RESETS_RESET_PADS_QSPI_OFFSET);
             if(0 == (val & reset_mask))  // bit is 0 if reset is done
             {
                 // Reset is now done
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1380,7 +1380,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
-            act_state.first_call =true;
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
@@ -1485,11 +1485,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1509,11 +1509,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1615,11 +1615,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1639,11 +1639,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1690,11 +1690,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             cnt--;
             if(0 == cnt)
             {
                 state->phase++;
-                act_state.first_call =true;
             }
             else if(0 == val)
             {
@@ -1788,11 +1788,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1812,11 +1812,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1928,11 +1928,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -1952,11 +1952,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
-                act_state.first_call =true;
             }
             else
             {
@@ -2072,11 +2072,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             cnt--;
             if(0 == cnt)
             {
                 state->phase++;
-                act_state.first_call = true;
             }
             else if(0 == val)
             {
@@ -2107,10 +2107,10 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->TXFLR), &tx_level);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(tx_level < FIFO_SIZE)
             {
                 state->phase++;
-                act_state.first_call = true;
             }
             else
             {
@@ -2199,11 +2199,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call = true;
             }
             else
             {
@@ -2223,6 +2223,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
@@ -2331,6 +2332,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
             {
                 // TFE (Transmit FIFO Empty) = 1
@@ -2355,11 +2357,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             if(0 == (val & XIP_SSI_SR_BUSY_MASK))
             {
                 // busy = idle
                 state->phase++;
-                act_state.first_call = true;
             }
             else
             {
@@ -2408,6 +2410,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     if(NULL == state)
     {
+        debug_line("ERROR: state is NULL !");
         return ERR_ACTION_NULL;
     }
 
@@ -2440,6 +2443,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         res = act_read_register(&act_state, &(XIP_CTRL->STAT), &val);
         if(RESULT_OK == res)
         {
+            act_state.first_call =true;
             if(1 == (val & 1))
             {
                 // Flush completed
@@ -2476,6 +2480,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call =true;
         }
         else
         {
