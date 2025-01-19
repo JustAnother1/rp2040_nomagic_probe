@@ -144,7 +144,7 @@ bool flash_write_buffer_has_data_block(void)
             else
             {
                 // wrap around
-                if(read_idx + block_size < first_invalid_idx)
+                if(read_idx + block_size <= first_invalid_idx)
                 {
                     return true;
                 }
@@ -172,7 +172,7 @@ bool flash_write_buffer_has_data_block(void)
             else
             {
                 // wrap around
-                if(read_idx + block_size < first_invalid_idx)
+                if(read_idx + block_size <= first_invalid_idx)
                 {
                     return true;
                 }
@@ -215,6 +215,7 @@ void flash_write_buffer_remove_block(void)
             read_idx = read_idx + block_size;
             if(first_invalid_idx == read_idx)
             {
+                buffer_start_address = buffer_start_address + first_invalid_idx;
                 read_idx = 0;
             }
             return;
@@ -222,12 +223,20 @@ void flash_write_buffer_remove_block(void)
     }
     if(read_idx != write_idx)
     {
-        read_idx = read_idx + block_size;
-        if(read_idx > write_idx)
+        if((write_idx > read_idx) && (write_idx < read_idx + block_size))
         {
-            // last partially block -> buffer is now empty
+            // partial write -> skip the missing bytes
+            write_idx = read_idx + block_size;
+            if(first_invalid_idx == write_idx)
+            {
+                write_idx = 0;
+            }
+        }
+        read_idx = read_idx + block_size;
+        if(first_invalid_idx == read_idx)
+        {
+            buffer_start_address = buffer_start_address + first_invalid_idx;
             read_idx = 0;
-            write_idx = 0;
         }
     }
     // else buffer is empty
@@ -235,7 +244,10 @@ void flash_write_buffer_remove_block(void)
 
 uint32_t flash_write_buffer_get_length_available_no_waiting(void)
 {
-    // TODO
+    if(0 != section_end_idx)
+    {
+        // TODO
+    }
     return 0;
 }
 
