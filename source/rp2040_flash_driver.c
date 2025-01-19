@@ -344,6 +344,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             }
             // page was successfully written
             flash_write_buffer_remove_block();
+            action_state.first_call = true;
             return ERR_NOT_COMPLETED;
         }
         else
@@ -374,205 +375,11 @@ Result flash_driver_write(flash_driver_data_typ* const state)
                 }
                 // page was successfully written
                 flash_write_buffer_remove_block();
-                return ERR_NOT_COMPLETED;
-            }
-        }
-    }
-    /*
-    if(2 == state->phase) // set up state - flush buffer if we switched to a new address area
-    {
-        if(false == flash_writing_ongoing)
-        {
-            // first write command
-            bytes_in_buffer = 0;
-            already_written_bytes = 0;
-            write_start_address = start_address;
-            write_end_address = write_start_address + length;
-            flash_writing_ongoing = true;
-            if(0 != write_address_offset)
-            {
-                // write does not start at an 0x00 address
-                // -> we can not write 256 bytes starting at an odd address
-                bytes_in_buffer = write_address_offset;
-                memset(write_buffer, 0xff, bytes_in_buffer); // writing 0xff does not do anything
-            }
-        }
-        else
-        {
-            if(start_address != write_start_address)
-            {
-                debug_line("start_address         : 0x%08lx", start_address);
-                debug_line("write_end_address     : 0x%08lx", write_end_address);
-                debug_line("already_written_bytes : 0x%08lx", already_written_bytes);
-                debug_line("write_start_address   : 0x%08lx", write_start_address);
-                debug_line("bytes_in_buffer       : 0x%08lx", bytes_in_buffer);
-                debug_line("write_address_offset  : 0x%08lx", write_address_offset);
-                // write command to new address
-                if(write_start_address + already_written_bytes + bytes_in_buffer != start_address)
-                {
-                    debug_line("INFO: Discontinuous write (gap between last write and this one)");
-                    debug_line("0x%08lx != 0x%08lx", (write_start_address + already_written_bytes + bytes_in_buffer), start_address);
-                    // -> flush buffer
-                    res = flash_write_page(&action_state, write_start_address - write_address_offset, write_buffer, bytes_in_buffer);
-                    if(ERR_NOT_COMPLETED == res)
-                    {
-                        // Try again next time
-                        return res;
-                    }
-                    if(RESULT_OK != res)
-                    {
-                        flash_writing_ongoing = false;
-                        debug_line("ERROR: writing page failed !");
-                        return res;
-                    }
-                    debug_line("INFO: writing to a new area !");
-                    bytes_in_buffer = 0;
-                    already_written_bytes = 0;
-                    // next time this will be a "continue last write"
-                    write_start_address = start_address;
-                    write_end_address = write_start_address + length;
-                }
-                else
-                {
-                    // a continuous write (this new write starts were the last one ended
-                    already_written_bytes = 0;
-                    write_start_address = start_address;
-                    write_end_address = write_start_address + length;
-                }
-            }
-            else
-            {
-                debug_line("ERROR: this should not happen ! Why are we here?");
-                return ERR_WRONG_VALUE;
-            }
-        }
-        state->phase++;
-        action_state.first_call = true;
-        return ERR_NOT_COMPLETED;
-    }
-
-    if(3 == state->phase) // clear buffer
-    {
-        if(0 < bytes_in_buffer)
-        {
-            if(256 <= (bytes_in_buffer + length))
-            {
-                // we now have enough bytes for a complete write
-                if(256 > bytes_in_buffer)
-                {
-                    // fill up write Buffer with the new data
-                    debug_line("memcopy: to writeBuffer[%ld] from data[%ld], %ld bytes", bytes_in_buffer, already_written_bytes, 256 - bytes_in_buffer);
-                    memcpy(&write_buffer[bytes_in_buffer], &data[already_written_bytes], 256 - bytes_in_buffer);
-                    // {
-                    //     uint32_t i;
-                    //     for(i = 0; i < (256 - bytes_in_buffer); i++)
-                    //     {
-                    //         write_buffer[bytes_in_buffer + i] = data[already_written_bytes + i];
-                    //     }
-                    // }
-                    bytes_in_buffer = 256; // copy only once
-                }
-                res = flash_write_page(&action_state, write_start_address - write_address_offset, write_buffer, 256);
-                if(ERR_NOT_COMPLETED == res)
-                {
-                    // Try again next time
-                    return res;
-                }
-                if(RESULT_OK != res)
-                {
-                    flash_writing_ongoing = false;
-                    debug_line("ERROR: writing page failed !");
-                    return res;
-                }
-                debug_line("wrote buffer !");
-                bytes_in_buffer = 0;
-                already_written_bytes += 256;
-                state->phase++;
                 action_state.first_call = true;
                 return ERR_NOT_COMPLETED;
             }
-            else
-            {
-                // add the new bytes to the buffer and we are done here
-                // not enough new bytes for a page write -> waiting for more
-                debug_line("memcopy: to writeBuffer[%ld] from data[%ld], %ld bytes", bytes_in_buffer, already_written_bytes, length);
-                memcpy(&write_buffer[bytes_in_buffer], &data[already_written_bytes], length);
-                // {
-                //     uint32_t i;
-                //     for(i = 0; i < length; i++)
-                //     {
-                //         write_buffer[bytes_in_buffer + i] = data[already_written_bytes + i];
-                //     }
-                // }
-                bytes_in_buffer = bytes_in_buffer + length;
-                return RESULT_OK;
-            }
-        }
-        else
-        {
-            // buffer already empty
-            debug_line("buffer was empty !");
-            state->phase++;
-            action_state.first_call = true;
-            return ERR_NOT_COMPLETED;
         }
     }
-
-    if(4 == state->phase) // write 256 Bytes if we have them
-    {
-        if(0 != bytes_in_buffer)
-        {
-            return ERR_WRONG_VALUE;
-        }
-        if((length + write_address_offset) - already_written_bytes >= 256)
-        {
-            res = flash_write_page(&action_state,
-                                   write_start_address - write_address_offset + already_written_bytes,
-                                   &data[already_written_bytes],
-                                   256);
-            if(ERR_NOT_COMPLETED == res)
-            {
-                // Try again next time
-                return res;
-            }
-            if(RESULT_OK != res)
-            {
-                flash_writing_ongoing = false;
-                debug_line("ERROR: writing page failed !");
-                return res;
-            }
-            // write was OK
-            already_written_bytes += 256;
-            debug_line("available bytes : %ld", (length + write_address_offset) - already_written_bytes);
-            action_state.first_call = true;
-            return ERR_NOT_COMPLETED;
-        }
-        else
-        {
-            if(0 < (length + write_address_offset) - already_written_bytes)
-            {
-                // add the new bytes to the buffer and we are done here
-                // not enough new bytes for a page write -> waiting for more
-                debug_line("memcopy: to writeBuffer[%ld] from data[%ld], %ld bytes",
-                           bytes_in_buffer,
-                           already_written_bytes - write_address_offset,
-                           (length + write_address_offset) - already_written_bytes);
-                memcpy(&write_buffer[bytes_in_buffer],
-                       &data[already_written_bytes - write_address_offset],
-                       (length + write_address_offset) - already_written_bytes);
-                // {
-                //     uint32_t i;
-                //     for(i = 0; i < (length - already_written_bytes); i++)
-                //     {
-                //         write_buffer[bytes_in_buffer + i] = data[already_written_bytes + i];
-                //     }
-                // }
-                bytes_in_buffer = bytes_in_buffer + (length + write_address_offset) - already_written_bytes;
-            }
-            // else no bytes to store away
-            return RESULT_OK;
-        }
-    }*/
 
     debug_line("ERROR: flash write: wrong state !");
     return ERR_WRONG_STATE;
@@ -741,30 +548,6 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
             // -> we might need to initialize the Flash again
             flash_initialized = false;
         }
-        /*
-        if(bytes_in_buffer < 256)
-        {
-            uint32_t i;
-            for(i = bytes_in_buffer; i < 256; i++)
-            {
-                write_buffer[i] = 0xff;
-            }
-            bytes_in_buffer = 256;
-        }
-        Result res = flash_write_page(&action_state, write_start_address, write_buffer, bytes_in_buffer);
-        if(ERR_NOT_COMPLETED == res)
-        {
-            // Try again next time
-            return res;
-        }
-        if(RESULT_OK != res)
-        {
-            flash_writing_ongoing = false;
-            debug_line("ERROR: writing page failed !");
-            return res;
-        }
-        bytes_in_buffer = 0;
-        */
     }
     else
     {
