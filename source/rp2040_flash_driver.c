@@ -20,6 +20,7 @@
 #include "probe_api/common.h"
 #include "probe_api/debug_log.h"
 #include "probe_api/result.h"
+#include "probe_api/gdb_packets.h"
 #include "rp2040_flash_driver.h"
 #include "flash_write_buffer.h"
 
@@ -428,6 +429,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
             erase_done_up_to = erase_done_up_to + (64*1024);
             target_restart_action_timeout();
             action_state.first_call = true;
+            gdb_is_now_busy(); // restart gdb timeout (we made progress)
             return ERR_NOT_COMPLETED;
         }
     }
@@ -452,6 +454,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
             erase_done_up_to = erase_done_up_to + (32*1024);
             target_restart_action_timeout();
             action_state.first_call = true;
+            gdb_is_now_busy(); // restart gdb timeout (we made progress)
             return ERR_NOT_COMPLETED;
         }
     }
@@ -476,6 +479,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
             erase_done_up_to = erase_done_up_to + (4*1024);
             target_restart_action_timeout();
             action_state.first_call = true;
+            gdb_is_now_busy(); // restart gdb timeout (we made progress)
             return ERR_NOT_COMPLETED;
         }
     }
