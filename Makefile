@@ -108,7 +108,7 @@ include tests/tests.mk
 SRC += $(SRC_FOLDER)rp2040.c
 SRC += $(SRC_FOLDER)rp2040_flash_driver.c
 SRC += $(SRC_FOLDER)flash_actions.c
-SRC += $(SRC_FOLDER)flash_write_buffer.c
+SRC += $(NOMAGIC_FOLDER)src/target/flash_write_buffer.c
 
 INCDIRS +=$(NOMAGIC_FOLDER)src/probe_api/
 INCDIRS +=$(SRC_FOLDER)
@@ -121,7 +121,7 @@ INCDIRS +=$(SRC_FOLDER)
 # =======
 
 help:
-	@echo ""
+	@echo "Raspberry Pi - RP2040 nomagic probe firmware"
 	@echo "available targets"
 	@echo "================="
 	@echo "make clean              delete all generated files"
