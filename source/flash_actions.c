@@ -2560,50 +2560,6 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     // end of flash_enter_cmd_xip()
 
-/*
-    // This is a hook for steps to be taken in between programming the flash and
-    // doing cached XIP reads from the flash. Called by the bootrom before
-    // entering flash second stage, and called by the debugger after flash
-    // programming.
-    void flash_flush_cache()
-    {
-        XIP_CTRL->FLUSH = 1;
-        while(0 == XIP_CTRL->STAT & 1)
-        {
-            ;
-        }
-        // Enable the cache
-        (XIP_CTRL->CTRL + REG_ALIAS_SET_BITS) = 1;
-
-        IO_QSPI->GPIO_QSPI_SS_CTRL = (IO_QSPI->GPIO_QSPI_SS_CTRL & ~IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_MASK);
-    }
-
-
-    // Put the SSI into a mode where XIP accesses translate to standard
-    // serial 03h read commands. The flash remains in its default serial command
-    // state, so will still respond to other commands.
-    void flash_enter_cmd_xip()
-    {
-        XIP_SSI->SSIENR = 0;
-
-        XIP_SSI->CTRLR0 = 0x200300; // 0 << 21 Standard 1-bit SPI serial frames; 31 << 16 32 clocks per data frame; 3 << 8 Send instr + addr, receive data
-        // ssi->ctrlr0 =
-        //         (SSI_CTRLR0_SPI_FRF_VALUE_STD << SSI_CTRLR0_SPI_FRF_LSB) |  // Standard 1-bit SPI serial frames
-        //         (31 << SSI_CTRLR0_DFS_32_LSB) |                             // 32 clocks per data frame
-        //         (SSI_CTRLR0_TMOD_VALUE_EEPROM_READ << SSI_CTRLR0_TMOD_LSB); // Send instr + addr, receive data
-
-        XIP_SSI->SPI_CTRLR0 = 0x3000218; // 3 << 24 Standard 03h read; 2 << 8 8-bit instruction prefix 6 << 2 24-bit addressing for 03h commands; 0 << 0 Command and address both in serial format
-
-        // ssi->spi_ctrlr0 =
-        //         (FLASHCMD_READ_DATA << SSI_SPI_CTRLR0_XIP_CMD_LSB) | // Standard 03h read
-        //         (2u << SSI_SPI_CTRLR0_INST_L_LSB) |    // 8-bit instruction prefix
-        //         (6u << SSI_SPI_CTRLR0_ADDR_L_LSB) |    // 24-bit addressing for 03h commands
-        //         (SSI_SPI_CTRLR0_TRANS_TYPE_VALUE_1C1A  // Command and address both in serial format
-        //                 << SSI_SPI_CTRLR0_TRANS_TYPE_LSB);
-        XIP_SSI->SSIENR = 1;
-    }
-*/
-
     if(9 == state->phase)
     {
         return RESULT_OK;
