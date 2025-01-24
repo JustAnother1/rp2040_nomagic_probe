@@ -13,16 +13,30 @@
  *
  */
 
-#ifndef SOURCE_CFG_TARGET_ACTIONS_H_
-#define SOURCE_CFG_TARGET_ACTIONS_H_
+#include <stdint.h>
 
-#include "probe_api/common.h"
+uint32_t hex_to_int(char* hex, uint32_t num_digits)
+{
+    (void) hex;
+    (void) num_digits;
+    return 0;
+}
 
-// writing/erasing the flash is target specific
-Result handle_target_reply_vFlashDone(action_data_typ* const action);
-Result handle_target_reply_vFlashErase(action_data_typ* const action);
-Result handle_target_reply_vFlashWrite(action_data_typ* const action);
-// reading some special regions of the memory might be target specific
-Result handle_target_reply_read_memory(action_data_typ* const action);
+void int_to_hex(char* hex, uint32_t value, uint32_t num_digits)
+{
+    (void) hex;
+    (void) value;
+    (void) num_digits;
+}
 
-#endif /* SOURCE_CFG_TARGET_ACTIONS_H_ */
+void byte_to_hex(char* hex, uint32_t value)
+{
+    (void) hex;
+    (void) value;
+}
+
+void byte_to_hex_endian(char* hex, uint32_t value)
+{
+    (void) hex;
+    (void) value;
+}
