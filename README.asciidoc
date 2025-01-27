@@ -82,10 +82,14 @@ Pin 21: (GPIO 16) Debug Uart TX (UART0)
 
 Pin 22: (GPIO 17) Debug Uart RX (UART0)
 
+== Acknowledgments
+
+Additionally to the Acknowledgments of the nomagic probe firmware
+we must also thank Raspberry Pi for providing the RP2040 chip and the detailed documentation.
 
 
 == license
-
+----
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2
 as published by the Free Software Foundation.
@@ -97,3 +101,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along
 with this program; if not, see <http://www.gnu.org/licenses/>
+----
