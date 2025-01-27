@@ -96,6 +96,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     }
 
     // reset QSPI
+    // read currently in reset peripherals
     if(2 == state->phase)
     {
         res = act_read_register(&act_state, &(RESETS->RESET), &val);
@@ -110,6 +111,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         }
     }
 
+    // put QSPI in Reset
     if(3 == state->phase)
     {
         val = val | (1 << RESETS_RESET_IO_QSPI_OFFSET) | (1 << RESETS_RESET_PADS_QSPI_OFFSET);
@@ -123,6 +125,8 @@ Result flash_initialize(flash_action_data_typ* const state)
             return res;
         }
     }
+
+    // end QSPI Reset
     if(4 == state->phase)
     {
         val = val & ~((uint32_t)(1 << RESETS_RESET_IO_QSPI_OFFSET) | (uint32_t)(1 << RESETS_RESET_PADS_QSPI_OFFSET));
@@ -2424,6 +2428,8 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // start of flash_flush_cache()
+
+    // flush the cache
     if(0 == state->phase)
     {
         res = step_write_ap(&(XIP_CTRL->FLUSH), 1);
@@ -2461,6 +2467,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
+    // enable cache
     if(2 == state->phase)
     {
         res = step_write_ap(&(XIP_CTRL->CTRL) + REG_ALIAS_SET_BITS, 1);
@@ -2474,6 +2481,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
+    // QSPI Chip Select signal back to normal
     if(3 == state->phase)
     {
         res = act_read_register(&act_state, &(IO_QSPI->GPIO_QSPI_SS_CTRL), &val);
@@ -2504,6 +2512,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     // start of flash_enter_cmd_xip()
 
+    // disable SSI
     if(5 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->SSIENR), 0);
@@ -2517,9 +2526,12 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
+    // configure the SSI
     if(6 == state->phase)
     {
-        // 0 << 21 Standard 1-bit SPI serial frames; 31 << 16 32 clocks per data frame; 3 << 8 Send instr + addr, receive data
+        //  0 << 21 : Standard 1-bit SPI serial frames
+        // 31 << 16 : 32 clocks per data frame
+        //  3 <<  8 : Send instr + addr, receive data
         res = step_write_ap(&(XIP_SSI->CTRLR0), 0x200300);
         if(RESULT_OK == res)
         {
@@ -2531,9 +2543,13 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
+    // configure the SPI
     if(7 == state->phase)
     {
-        // 3 << 24 Standard 03h read; 2 << 8 8-bit instruction prefix 6 << 2 24-bit addressing for 03h commands; 0 << 0 Command and address both in serial format
+        // 3 << 24 : Standard 03h read
+        // 2 <<  8 : 8-bit instruction prefix
+        // 6 <<  2 : 24-bit addressing for 03h commands
+        // 0 <<  0 : Command and address both in serial format
         res = step_write_ap(&(XIP_SSI->SPI_CTRLR0), 0x3000218);
         if(RESULT_OK == res)
         {
@@ -2545,6 +2561,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
+    // enable SSI
     if(8 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->SSIENR), 1);
