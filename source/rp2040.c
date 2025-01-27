@@ -220,7 +220,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
         }
         if(RESULT_OK != res)
         {
-            debug_line("ERROR: finishing write failed !");
+            debug_line("ERROR: enter XiP mode failed !");
             reply_packet_prepare();
             reply_packet_add(ERROR_TARGET_FAILED);
             reply_packet_send();
