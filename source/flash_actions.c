@@ -1890,7 +1890,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         }
         if(256 < length)
         {
-            debug_line("ERROR: write too short (%ld)", length);
+            debug_line("ERROR: write too long (%ld)", length);
             return ERR_WRONG_VALUE;
         }
 

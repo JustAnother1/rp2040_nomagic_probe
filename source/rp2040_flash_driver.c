@@ -19,10 +19,10 @@
 #include "flash_actions.h"
 #include "probe_api/common.h"
 #include "probe_api/debug_log.h"
-#include "probe_api/result.h"
+#include "probe_api/flash_write_buffer.h"
 #include "probe_api/gdb_packets.h"
+#include "probe_api/result.h"
 #include "rp2040_flash_driver.h"
-#include "flash_write_buffer.h"
 
 
 static bool flash_initialized;

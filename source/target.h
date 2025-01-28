@@ -40,6 +40,9 @@ static const mon_cmd_typ mon_commands[] = {
 /* 4 */ {"reg",                        "show register content"},
 };
 
+#define TARGET_RAM_START   0x20000000
+
+
 void target_init(void);
 void target_tick(void);
 bool target_is_SWDv2(void);
@@ -47,5 +50,6 @@ uint32_t target_get_SWD_core_id(uint32_t core_num); // only required for SWDv2 (
 uint32_t target_get_SWD_APSel(uint32_t core_num);
 
 void target_send_file(char* filename, uint32_t offset, uint32_t len);
+Result target_write(uint32_t start_address, uint8_t* data, uint32_t length);
 
 #endif /* SOURCE_TARGET_H_ */

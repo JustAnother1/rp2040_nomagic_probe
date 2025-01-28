@@ -47,6 +47,9 @@ TST_LD = cc
 #
 # - USE_BOOT_ROM = yes
 #       use the functions stored in the boot rom in the RP2040 to access the QSPI flash.
+#
+# - EXECUTE_CODE_ON_TARGET = yes
+#       download code to target RAM and execute there (used for Flash erase, Flash program,..)
 
 BIN_FOLDER = build/
 SRC_FOLDER = source/
@@ -60,6 +63,7 @@ HAS_CLI = yes
 HAS_GDB_SERVER = yes
 HAS_NCM = yes
 USE_BOOT_ROM = no
+EXECUTE_CODE_ON_TARGET = yes
 
 DDEFS = -DLOOP_MONITOR=1
 
@@ -104,14 +108,23 @@ LFLAGS += -fno-common -T$(LKR_SCRIPT)
 # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 include nomagic_probe/nomagic_probe.mk
 include tests/tests.mk
+include target_src/target.mk
 
 SRC += $(SRC_FOLDER)rp2040.c
 SRC += $(SRC_FOLDER)rp2040_flash_driver.c
-SRC += $(SRC_FOLDER)flash_actions.c
 SRC += $(NOMAGIC_FOLDER)src/target/flash_write_buffer.c
+ifeq ($(EXECUTE_CODE_ON_TARGET), yes)
+	DDEFS += -DFEAT_EXECUTE_CODE_ON_TARGET
+	SRC += $(SRC_FOLDER)flash_actions_on_target.c
+	SRC += $(NOMAGIC_FOLDER)src/target/execute.c
+	SRC += target_src/target_progs.c
+else
+	SRC += $(SRC_FOLDER)flash_actions.c
+endif
 
-INCDIRS +=$(NOMAGIC_FOLDER)src/probe_api/
+INCDIRS +=$(NOMAGIC_FOLDER)src/
 INCDIRS +=$(SRC_FOLDER)
+INCDIRS += target_src/
 
 # make config
 .DEFAULT_GOAL = all
@@ -177,11 +190,19 @@ all: $(BIN_FOLDER)$(PROJECT).uf2 $(BIN_FOLDER)$(PROJECT).bin
 	@echo "===="
 	$(SIZE) --format=GNU $(BIN_FOLDER)$(PROJECT).elf
 
-$(BIN_FOLDER)%o: %c
+ifeq ($(EXECUTE_CODE_ON_TARGET), yes)
+$(BIN_FOLDER)%o: %c target_src/target_progs.c
 	@echo ""
 	@echo "=== compiling $@"
 	@$(MKDIR_P) $(@D)
 	$(CC) $(CFLAGS) $(DDEFS) $(INCDIR) $< -o $@
+else
+$(BIN_FOLDER)%o: %c 
+	@echo ""
+	@echo "=== compiling $@"
+	@$(MKDIR_P) $(@D)
+	$(CC) $(CFLAGS) $(DDEFS) $(INCDIR) $< -o $@
+endif
 
 list: $(BIN_FOLDER)$(PROJECT).elf
 	@echo ""

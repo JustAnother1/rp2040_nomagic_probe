@@ -20,6 +20,7 @@
 #include "probe_api/common.h"
 #include "probe_api/cortex-m.h"
 #include "probe_api/debug_log.h"
+#include "probe_api/flash_write_buffer.h"
 #include "probe_api/gdb_error_codes.h"
 #include "probe_api/gdb_monitor_commands.h"
 #include "probe_api/gdb_packets.h"
@@ -29,8 +30,10 @@
 #include "probe_api/swd.h"
 #include "probe_api/util.h"
 #include "rp2040_flash_driver.h"
-#include "flash_write_buffer.h"
 #include "target.h"
+#ifdef FEAT_EXECUTE_CODE_ON_TARGET
+#include "target/execute.h"
+#endif
 
 // RP2040:
 // Core 0: 0x01002927
@@ -77,6 +80,9 @@ void target_init(void)
 {
     flash_write_buffer_init(256); // flash page size = 256 Bytes
     flash_driver_init();
+#ifdef FEAT_EXECUTE_CODE_ON_TARGET
+    target_execute_init();
+#endif
     common_target_init();
 }
 
@@ -455,4 +461,13 @@ Result handle_target_reply_read_memory(action_data_typ* const action)
     }
 
     return ERR_WRONG_STATE;
+}
+
+Result target_write(uint32_t start_address, uint8_t* data, uint32_t length)
+{
+    // TODO
+    (void) start_address;
+    (void) data;
+    (void) length;
+    return RESULT_OK;
 }
