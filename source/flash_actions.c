@@ -1678,10 +1678,18 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
     if(13 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
-        if((RESULT_OK == res) && (0 < val))
+        if(RESULT_OK == res)
         {
-            state->phase++;
             act_state.first_call =true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                // try again
+                return ERR_NOT_COMPLETED;
+            }
         }
         else
         {
@@ -1733,7 +1741,6 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
     if(16 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->DR0), (0xff & FLASHCMD_READ_STATUS));
-
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -1746,11 +1753,10 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
 
     if(17 == state->phase)
     {
-        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
-        if((RESULT_OK == res) && (0 < val))
+        res = step_write_ap(&(XIP_SSI->DR0), (0xff));
+        if(RESULT_OK == res)
         {
             state->phase++;
-            act_state.first_call =true;
         }
         else
         {
@@ -1759,6 +1765,27 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
     }
 
     if(18 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call =true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(19 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);  // skip a byte
         if(RESULT_OK == res)
@@ -1772,7 +1799,28 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         }
     }
 
-    if(19 == state->phase)
+    if(20 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call =true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(21 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &status);
         if(RESULT_OK == res)
@@ -1787,7 +1835,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
     }
 
     // wait for TFE (Transmit FIFO Empty) = 1
-    if(20 == state->phase)
+    if(22 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
@@ -1811,7 +1859,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
     }
 
     // wait for busy = idle
-    if(21 == state->phase)
+    if(23 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
@@ -1834,7 +1882,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         }
     }
 
-    if(22 == state->phase)
+    if(24 == state->phase)
     {
         res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), (3 << IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_OFFSET));
         if(RESULT_OK == res)
@@ -1848,7 +1896,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         }
     }
 
-    if(23 == state->phase)
+    if(25 == state->phase)
     {
         if(status & STATUS_REGISTER_BUSY)
         {
@@ -2062,8 +2110,15 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
         if((RESULT_OK == res) && (0 < val))
         {
-            state->phase++;
             act_state.first_call = true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
         }
         else
         {
@@ -2277,7 +2332,6 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
     if(21 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->DR0), (0xff & FLASHCMD_READ_STATUS));
-
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -2290,11 +2344,10 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 
     if(22 == state->phase)
     {
-        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
-        if((RESULT_OK == res) && (0 < val))
+        res = step_write_ap(&(XIP_SSI->DR0), (0xff));
+        if(RESULT_OK == res)
         {
             state->phase++;
-            act_state.first_call = true;
         }
         else
         {
@@ -2303,6 +2356,27 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
     }
 
     if(23 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call = true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(24 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);  // skip a byte
         if(RESULT_OK == res)
@@ -2316,7 +2390,28 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         }
     }
 
-    if(24 == state->phase)
+    if(25 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call = true;
+            if(0 < val)
+            {
+                state->phase++;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(26 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &status);
         if(RESULT_OK == res)
@@ -2331,7 +2426,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
     }
 
     // wait for TFE (Transmit FIFO Empty) = 1
-    if(25 == state->phase)
+    if(27 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
@@ -2356,7 +2451,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
     }
 
     // wait for busy = idle
-    if(26 == state->phase)
+    if(28 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
         if(RESULT_OK == res)
@@ -2379,7 +2474,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         }
     }
 
-    if(27 == state->phase)
+    if(29 == state->phase)
     {
         res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), (3 << IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_OFFSET));
         if(RESULT_OK == res)
@@ -2392,7 +2487,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         }
     }
 
-    if(28 == state->phase)
+    if(30 == state->phase)
     {
         if(status & STATUS_REGISTER_BUSY)
         {
