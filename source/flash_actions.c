@@ -88,6 +88,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -134,6 +135,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -667,6 +669,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -722,6 +725,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -916,6 +920,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1111,6 +1116,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1347,6 +1353,7 @@ Result flash_initialize(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1476,6 +1483,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1606,6 +1614,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1668,6 +1677,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         {
             cnt = 5;
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1757,6 +1767,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -1790,6 +1801,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);  // skip a byte
         if(RESULT_OK == res)
         {
+            debug_line("INFO: skip status as 0x%02lx!",val );
             state->phase++;
             act_state.first_call =true;
         }
@@ -1825,6 +1837,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &status);
         if(RESULT_OK == res)
         {
+            debug_line("INFO: read status as 0x%02lx!",status );
             state->phase++;
             act_state.first_call =true;
         }
@@ -1898,6 +1911,12 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
 
     if(25 == state->phase)
     {
+        if(0xff == status)
+        {
+            // something is wrong here
+            debug_line("ERROR: could not read QSPI Flash status !");
+            return ERR_TARGET_ERROR;
+        }
         if(status & STATUS_REGISTER_BUSY)
         {
             // still busy
@@ -1944,7 +1963,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 
         state->phase = 0;
         state->first_call = false;
-        act_state.first_call =true;
+        act_state.first_call = true;
     }
 
     if(0 == state->phase)
@@ -1967,6 +1986,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -2098,6 +2118,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         {
             cnt = 5;
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -2159,6 +2180,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         cnt = 0;  // no byte send
         cnt_2 = 0; // no byte received
         state->phase++;
+        act_state.first_call = true;
     }
 
     if(13 == state->phase)
@@ -2249,6 +2271,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         {
             // we send all data
             state->phase++;
+            act_state.first_call = true;
         }
     }
 
@@ -2335,6 +2358,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -2347,6 +2371,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = step_write_ap(&(XIP_SSI->DR0), (0xff));
         if(RESULT_OK == res)
         {
+            act_state.first_call = true;
             state->phase++;
         }
         else
@@ -2381,6 +2406,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);  // skip a byte
         if(RESULT_OK == res)
         {
+            debug_line("INFO: skip status as 0x%02lx!",val );
             state->phase++;
             act_state.first_call = true;
         }
@@ -2416,6 +2442,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &status);
         if(RESULT_OK == res)
         {
+            debug_line("INFO: read status as 0x%02lx!",status );
             state->phase++;
             act_state.first_call = true;
         }
@@ -2436,7 +2463,6 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
             {
                 // TFE (Transmit FIFO Empty) = 1
                 state->phase++;
-                act_state.first_call = true;
             }
             else
             {
@@ -2489,6 +2515,11 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 
     if(30 == state->phase)
     {
+        if(0xff == status)
+        {
+            // something is wrong here
+            return ERR_TARGET_ERROR;
+        }
         if(status & STATUS_REGISTER_BUSY)
         {
             // still busy
@@ -2531,6 +2562,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
@@ -2569,6 +2601,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         if(RESULT_OK == res)
         {
             state->phase++;
+            act_state.first_call = true;
         }
         else
         {
