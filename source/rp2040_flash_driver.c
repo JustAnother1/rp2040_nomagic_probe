@@ -470,7 +470,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
         if(RESULT_OK != res)
         {
             flash_erase_ongoing = false;
-            debug_line("ERROR: erase 32kB failed !");
+            debug_line("ERROR: erase 4kB failed (%ld/%ld)!", action_state.phase, res);
             return res;
         }
         else
