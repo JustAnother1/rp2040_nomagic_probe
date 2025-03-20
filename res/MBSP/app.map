@@ -1,0 +1,156 @@
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x10000000         0x00200000         xr
+RAM              0x20000000         0x00042000         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD hal/startup.o
+LOAD hal/irq.o
+LOAD main.o
+START GROUP
+LOAD /home/lars/bin/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/libgcc.a
+LOAD /home/lars/bin/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/libg.a
+LOAD /home/lars/bin/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/libc.a
+END GROUP
+TARGET(binary)
+LOAD hal/2ndstage.bin
+
+.text           0x10000000      0x200
+ hal/2ndstage.bin()
+ .data          0x10000000      0x100 hal/2ndstage.bin
+                0x10000000                _binary_hal_2ndstage_bin_start
+                0x10000100                _binary_hal_2ndstage_bin_end
+ *(.vectors)
+ .vectors       0x10000100      0x100 hal/irq.o
+                0x10000100                __VECTOR_TABLE_RAM
+
+.glue_7         0x10000200        0x0
+ .glue_7        0x10000200        0x0 linker stubs
+
+.glue_7t        0x10000200        0x0
+ .glue_7t       0x10000200        0x0 linker stubs
+
+.vfp11_veneer   0x10000200        0x0
+ .vfp11_veneer  0x10000200        0x0 linker stubs
+
+.v4_bx          0x10000200        0x0
+ .v4_bx         0x10000200        0x0 linker stubs
+
+.iplt           0x10000200        0x0
+ .iplt          0x10000200        0x0 hal/startup.o
+
+.text.startup   0x10000200       0x7c
+ .text.startup  0x10000200       0x7c main.o
+                0x10000200                main
+
+.text           0x1000027c      0x218
+ *(.text)
+ .text          0x1000027c      0x214 hal/startup.o
+                0x1000027c                SysTick_Handler
+                0x1000028c                Reset_Handler
+ .text          0x10000490        0x4 hal/irq.o
+                0x10000490                default_Handler
+ .text          0x10000494        0x0 main.o
+
+.rel.dyn        0x10000494        0x0
+ .rel.iplt      0x10000494        0x0 hal/startup.o
+
+.data           0x20000000        0x0 load address 0x10000494
+                0x20000000                        . = ALIGN (0x4)
+                0x20000000                        __data_start = .
+ *(.data)
+ .data          0x20000000        0x0 hal/startup.o
+ .data          0x20000000        0x0 hal/irq.o
+ .data          0x20000000        0x0 main.o
+ *(.data.*)
+                0x20000000                        . = ALIGN (0x4)
+                0x20000000                        __data_end = .
+                0x10000494                        __data_in_flash = LOADADDR (.data)
+
+.igot.plt       0x20000000        0x0 load address 0x10000494
+ .igot.plt      0x20000000        0x0 hal/startup.o
+
+.bss            0x20000000        0xc load address 0x10000494
+                0x20000000                        __bss_start = .
+ *(.bss)
+ .bss           0x20000000        0x4 hal/startup.o
+                0x20000000                ms_since_boot
+ .bss           0x20000004        0x0 hal/irq.o
+ .bss           0x20000004        0x5 main.o
+                0x20000004                cnt
+                0x20000008                on
+ *(COMMON)
+                0x2000000c                        . = ALIGN (0x4)
+ *fill*         0x20000009        0x3 
+                0x2000000c                        __bss_end = .
+                0x2000000c                        _end = __bss_end
+                0x2000000c                        end = _end
+OUTPUT(mbsp.elf default)
+LOAD linker stubs
+
+.debug_info     0x00000000     0x1a5d
+ .debug_info    0x00000000     0x1405 hal/startup.o
+ .debug_info    0x00001405       0x91 hal/irq.o
+ .debug_info    0x00001496      0x5c7 main.o
+
+.debug_abbrev   0x00000000      0x3a0
+ .debug_abbrev  0x00000000      0x1c4 hal/startup.o
+ .debug_abbrev  0x000001c4       0xaf hal/irq.o
+ .debug_abbrev  0x00000273      0x12d main.o
+
+.debug_loclists
+                0x00000000       0x9b
+ .debug_loclists
+                0x00000000       0x7a hal/startup.o
+ .debug_loclists
+                0x0000007a       0x21 main.o
+
+.debug_aranges  0x00000000       0x60
+ .debug_aranges
+                0x00000000       0x20 hal/startup.o
+ .debug_aranges
+                0x00000020       0x20 hal/irq.o
+ .debug_aranges
+                0x00000040       0x20 main.o
+
+.debug_line     0x00000000      0x667
+ .debug_line    0x00000000      0x403 hal/startup.o
+ .debug_line    0x00000403       0x45 hal/irq.o
+ .debug_line    0x00000448      0x21f main.o
+
+.debug_str      0x00000000     0x1182
+ .debug_str     0x00000000     0x1182 hal/startup.o
+                               0x1153 (size before relaxing)
+ .debug_str     0x00001182      0x111 hal/irq.o
+ .debug_str     0x00001182      0x677 main.o
+
+.comment        0x00000000       0x45
+ .comment       0x00000000       0x45 hal/startup.o
+                                 0x46 (size before relaxing)
+ .comment       0x00000045       0x46 hal/irq.o
+ .comment       0x00000045       0x46 main.o
+
+.ARM.attributes
+                0x00000000       0x2c
+ .ARM.attributes
+                0x00000000       0x2c hal/startup.o
+ .ARM.attributes
+                0x0000002c       0x2c hal/irq.o
+ .ARM.attributes
+                0x00000058       0x2c main.o
+
+.debug_frame    0x00000000       0x94
+ .debug_frame   0x00000000       0x40 hal/startup.o
+ .debug_frame   0x00000040       0x20 hal/irq.o
+ .debug_frame   0x00000060       0x34 main.o
+
+.debug_rnglists
+                0x00000000       0x25
+ .debug_rnglists
+                0x00000000       0x25 main.o

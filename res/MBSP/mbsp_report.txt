@@ -1,0 +1,9 @@
+{
+    "project_type": "make",
+    "chip_name": "RP2040",
+    "digital_output": {"green_led": {
+        "pad": "25",
+        "type": "push pull"
+    }},
+    "vendor_name": "Raspberry Pi"
+}
