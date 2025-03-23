@@ -27,7 +27,6 @@
 
 static bool flash_initialized;
 static bool flash_erase_ongoing;
-static bool flash_writing_ongoing; // true as long as there are still writes that not have been written to flash
 // the following are only valid if flash_erase_ongoing = true
 static uint32_t erase_start_address;
 static uint32_t erase_end_address;
@@ -46,7 +45,6 @@ void flash_driver_init(void)
 {
     flash_initialized = false;
     flash_erase_ongoing = false;
-    flash_writing_ongoing = false;
     action_state.first_call = true;
     erase_start_address = 0;
     erase_end_address = 0;
@@ -339,7 +337,6 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             }
             if(RESULT_OK != res)
             {
-                flash_writing_ongoing = false;
                 debug_line("ERROR: writing page failed !");
                 return res;
             }
@@ -370,7 +367,6 @@ Result flash_driver_write(flash_driver_data_typ* const state)
                 }
                 if(RESULT_OK != res)
                 {
-                    flash_writing_ongoing = false;
                     debug_line("ERROR: writing page failed !");
                     return res;
                 }
@@ -513,50 +509,43 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
         debug_line("Finishing write,...");
     }
 
-    if(true == flash_writing_ongoing)
+    // finish writing to flash
+    uint32_t length = flash_write_buffer_get_length_available_waiting();
+    if(1 > length)
     {
-        Result res;
-        // finish writing to flash
-        uint32_t length = flash_write_buffer_get_length_available_waiting();
-        if(1 > length)
-        {
-            // nothing to write anymore
-            // -> we are done here
-            flash_writing_ongoing = false;
-            // after a completed Write everything can happen
-            // -> we might need to initialize the Flash again
-            flash_initialized = false;
-            return RESULT_OK;
-        }
-        else
-        {
-            // some bytes remaining
-            uint32_t address = flash_write_buffer_get_write_address();
-            uint8_t* data = flash_write_buffer_get_data_block();
-            res = flash_write_page(&action_state, address, data, length);
-            if(ERR_NOT_COMPLETED == res)
-            {
-                // Try again next time
-                return res;
-            }
-            if(RESULT_OK != res)
-            {
-                flash_writing_ongoing = false;
-                debug_line("ERROR: writing page failed !");
-                return res;
-            }
-            // page was successfully written
-            flash_write_buffer_remove_block();
-            flash_writing_ongoing = false;
-            // after a completed Write everything can happen
-            // -> we might need to initialize the Flash again
-            flash_initialized = false;
-        }
+        // nothing to write anymore
+        debug_line("nothing to write anymore.");
+        // -> we are done here
+        // after a completed Write everything can happen
+        // -> we might need to initialize the Flash again
+        flash_initialized = false;
+        return RESULT_OK;
     }
     else
     {
-        // write already finished
+        // some bytes remaining
+        Result res;
+        uint32_t address = flash_write_buffer_get_write_address();
+        uint8_t* data = flash_write_buffer_get_data_block();
+        res = flash_write_page(&action_state, address, data, length);
+        if(ERR_NOT_COMPLETED == res)
+        {
+            // Try again next time
+            return res;
+        }
+        if(RESULT_OK != res)
+        {
+            debug_line("ERROR: writing page failed !");
+            return res;
+        }
+        // page was successfully written
+        debug_line("wrote remaining %ld bytes", length);
+        flash_write_buffer_remove_block();
+        // after a completed Write everything can happen
+        // -> we might need to initialize the Flash again
+        flash_initialized = false;
     }
+
     return RESULT_OK;
 }
 
