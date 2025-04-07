@@ -444,7 +444,7 @@ Result handle_target_reply_read_memory(action_data_typ* const action)
         int_to_hex(buf, action->read_0, 8);
         buf[8] = 0;
         reply_packet_add(buf);
-        // debug_line("read 0x%08lx", action->read_0);
+        // debug_line("read 0x%08lx / %s from 0x%08lx", action->read_0, buf, (action->gdb_parameter.address_length.address + action->intern[INTERN_MEMORY_OFFSET]));
         action->intern[INTERN_MEMORY_OFFSET] = action->intern[INTERN_MEMORY_OFFSET] + 4;
         action->cur_phase = 0;
         if(action->gdb_parameter.address_length.length <= action->intern[INTERN_MEMORY_OFFSET])
@@ -469,5 +469,6 @@ Result target_write(uint32_t start_address, uint8_t* data, uint32_t length)
     (void) start_address;
     (void) data;
     (void) length;
+    debug_line("ERROR: target_write() not implemented !!!");
     return RESULT_OK;
 }

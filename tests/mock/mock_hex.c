@@ -35,8 +35,3 @@ void byte_to_hex(char* hex, uint32_t value)
     (void) value;
 }
 
-void byte_to_hex_endian(char* hex, uint32_t value)
-{
-    (void) hex;
-    (void) value;
-}

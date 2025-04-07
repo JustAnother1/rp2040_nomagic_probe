@@ -26,7 +26,7 @@
 #include "hal/hw/XIP_SSI.h"
 #include "hal/qspi_flash.h"
 
-// TODO user configurable?
+// TODO user configurable!
 #define QSPI_BAUDRATE_DIVIDOR     8
 
 #define FIFO_SIZE 10  // is probably 16 but just to be sure
@@ -41,11 +41,11 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
 
 static uint32_t val; // a value read from a register or prepared to be written into a register
 static uint32_t status; // read status value from Flash
-static uint32_t tx_level;
-static uint32_t rx_level;
+static uint32_t tx_level; // number of bytes in transmit buffer
+static uint32_t rx_level; // number of bytes in receive buffer
 static uint32_t cnt; // a counter
 static uint32_t cnt_2; // another counter
-static activity_data_typ act_state;
+static activity_data_typ act_state;  // sub state state variables
 
 Result flash_initialize(flash_action_data_typ* const state)
 {
@@ -493,7 +493,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(28 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->SER), (1 << XIP_SSI_SER_SER_OFFSET)); // slave selected
+        res = step_write_ap(&(XIP_SSI->SER), (1 << XIP_SSI_SER_SER_OFFSET)); // 1 = slave selected; 0 = slave not selected
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -624,9 +624,9 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(38 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->CTRLR0),
-                                    // TODO Quad SPI, 32bit
                                     // SSTE = Slave select toggle enable
-                                    (XIP_SSI_CTRLR0_SPI_FRF_STD << XIP_SSI_CTRLR0_SPI_FRF_OFFSET) | // Standard 1-bit SPI serial frames
+                                    (1 << XIP_SSI_CTRLR0_SSTE_OFFSET) |
+                                    (XIP_SSI_CTRLR0_SPI_FRF_STD << XIP_SSI_CTRLR0_SPI_FRF_OFFSET) | // QSPI frames / SPI Frames
                                     (7 << XIP_SSI_CTRLR0_DFS_32_OFFSET) | // 8 clocks per data frame
                                     (XIP_SSI_CTRLR0_TMOD_TX_AND_RX << XIP_SSI_CTRLR0_TMOD_OFFSET)  // TX and RX FIFOs are both used for every byte
                                     // CFS = Control Frame size = Microwire only !
@@ -648,7 +648,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(39 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR1), 0); // NDF = 0 = number of data frames used with Quad SPI // TODO
+        res = step_write_ap(&(XIP_SSI->CTRLR1), 0); // NDF = 0 = number of data frames used with Quad SPI
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -662,7 +662,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(40 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->SPI_CTRLR0),
-                                    (3 << XIP_SSI_SPI_CTRLR0_XIP_CMD_OFFSET) //  SPI Command 0x03 = read
+                                    (0x03 << XIP_SSI_SPI_CTRLR0_XIP_CMD_OFFSET) //   Command 0x03 = read SPI (1 bit per clock); 0xeb = read QSPI (4 bits per clock)
                                   | (0 << XIP_SSI_SPI_CTRLR0_WAIT_CYCLES_OFFSET)
                                   | (XIP_SSI_SPI_CTRLR0_INST_L_8B << XIP_SSI_SPI_CTRLR0_INST_L_OFFSET)
                                   | (6 << XIP_SSI_SPI_CTRLR0_ADDR_L_OFFSET) // in 4 bit increments -> 24 bit = 6
@@ -2817,6 +2817,8 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 Result flash_enter_XIP(flash_action_data_typ* const state)
 {
     Result res;
+    static uint32_t db_phase = 0;
+    static uint32_t db_cnt = 0;
 
     if(NULL == state)
     {
@@ -2827,16 +2829,300 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     if(true == state->first_call)
     {
         debug_line("starting enter XiP mode sequence...");
-
         state->phase = 0;
         state->first_call = false;
         act_state.first_call =true;
+        db_phase = 0;
+        db_cnt = 0;
+        cnt = 0;
+    }
+    else
+    {
+        if(db_phase != state->phase)
+        {
+            debug_line("dbg:p= %ld", state->phase);
+            db_phase = state->phase;  // just once
+        }
+        if(db_cnt != cnt)
+        {
+            debug_line("dbg:c= %ld", cnt);
+            db_cnt = cnt;  // just once
+        }
+    }
+
+    // do the initial read (command + Address + continuation code + read)
+
+    // disable SSI
+    if(0 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->SSIENR), 0);
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // configure the SSI
+    if(1 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->CTRLR0),
+                                    (XIP_SSI_CTRLR0_SPI_FRF_QUAD << XIP_SSI_CTRLR0_SPI_FRF_OFFSET) // QSPI frames / SPI Frames
+                                    | (1 << XIP_SSI_CTRLR0_DFS_32_OFFSET) // 8 bits per data frame -> 2 clock in QSPI (value is n+1)
+                                    | (7 << XIP_SSI_CTRLR0_CFS_OFFSET)    // 8 clocks per control fame (value is n+1)
+                                    | (XIP_SSI_CTRLR0_TMOD_RX_ONLY << XIP_SSI_CTRLR0_TMOD_OFFSET)
+                                    | (8 << XIP_SSI_CTRLR0_DFS_OFFSET)
+                                    );
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(2 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->CTRLR1), 3);  // read this many bytes
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // configure the SPI
+    if(3 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->SPI_CTRLR0),
+                            (0xebul << XIP_SSI_SPI_CTRLR0_XIP_CMD_OFFSET) // Command 0x03 = read SPI (1 bit per clock); 0xeb = read QSPI (4 bits per clock)
+                                                                          // or append to address (INST_L = 0)
+                          | (4 << XIP_SSI_SPI_CTRLR0_WAIT_CYCLES_OFFSET)
+                          | (XIP_SSI_SPI_CTRLR0_INST_L_8B << XIP_SSI_SPI_CTRLR0_INST_L_OFFSET)
+                          | (8 << XIP_SSI_SPI_CTRLR0_ADDR_L_OFFSET) // in 4 bit increments -> 24 bit = 6; 32bit = 8;
+                          | (XIP_SSI_SPI_CTRLR0_TRANS_TYPE_1C2A << XIP_SSI_SPI_CTRLR0_TRANS_TYPE_OFFSET)  // command is SPI, Address and data is QSPI
+                            );
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // disable slave
+    if(4 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->SER), 0);
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // enable SSI
+    if(5 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->SSIENR), 1);
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(6 == state->phase)
+    {
+        // /CS Low
+        res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), (2 << IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_OFFSET));
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(7 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0xeb);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+            act_state.first_call = true;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(8 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->DR0), 0xa0);
+
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+            act_state.first_call = true;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // enable slave
+    if(9 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->SER), 1);
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // wait for TFE (Transmit FIFO Empty) = 1
+    if(10 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call = true;
+            if(XIP_SSI_SR_TFE_MASK == (val & XIP_SSI_SR_TFE_MASK))
+            {
+                // TFE (Transmit FIFO Empty) = 1
+                state->phase++;
+                cnt = 4;  // we read 4 bytes from the Flash
+            }
+            else
+            {
+                // read again
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(11 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->RXFLR), &rx_level);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call =true;
+            if(0 < rx_level)
+            {
+                state->phase++;
+            }
+            else
+            {
+                // try again
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(12 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call = true;
+            cnt--;
+            rx_level--;
+            if(0 == cnt)
+            {
+                state->phase++;
+            }
+            else if(0 == rx_level)
+            {
+                state->phase = 11; // read RXFLR again
+                return ERR_NOT_COMPLETED;
+            }
+            else
+            {
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    // wait for busy = idle
+    if(13 == state->phase)
+    {
+        res = act_read_register(&act_state, &(XIP_SSI->SR), &val);
+        if(RESULT_OK == res)
+        {
+            act_state.first_call = true;
+            if(0 == (val & XIP_SSI_SR_BUSY_MASK))
+            {
+                // busy = idle
+                state->phase++;
+            }
+            else
+            {
+                // read again
+                return ERR_NOT_COMPLETED;
+            }
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(14 == state->phase)
+    {
+        // /CS High
+        res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), (3 << IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_OFFSET));
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
     }
 
     // start of flash_flush_cache()
 
     // flush the cache
-    if(0 == state->phase)
+    if(15 == state->phase)
     {
         res = step_write_ap(&(XIP_CTRL->FLUSH), 1);
         if(RESULT_OK == res)
@@ -2850,8 +3136,8 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         }
     }
 
-    // wait for Flash has completed
-    if(1 == state->phase)
+    // wait until flush has completed
+    if(16 == state->phase)
     {
         res = act_read_register(&act_state, &(XIP_CTRL->STAT), &val);
         if(RESULT_OK == res)
@@ -2875,7 +3161,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // enable cache
-    if(2 == state->phase)
+    if(17 == state->phase)
     {
         res = step_write_ap(&(XIP_CTRL->CTRL) + REG_ALIAS_SET_BITS, 1);
         if(RESULT_OK == res)
@@ -2890,23 +3176,9 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // QSPI Chip Select signal back to normal
-    if(3 == state->phase)
+    if(18 == state->phase)
     {
-        res = act_read_register(&act_state, &(IO_QSPI->GPIO_QSPI_SS_CTRL), &val);
-        if(RESULT_OK == res)
-        {
-            state->phase++;
-            act_state.first_call =true;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    if(4 == state->phase)
-    {
-        res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), val & (uint32_t)~IO_QSPI_GPIO_QSPI_SS_CTRL_OUTOVER_MASK);
+        res = step_write_ap(&(IO_QSPI->GPIO_QSPI_SS_CTRL), 0);
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -2921,7 +3193,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     // start of flash_enter_cmd_xip()
 
     // disable SSI
-    if(5 == state->phase)
+    if(19 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->SSIENR), 0);
         if(RESULT_OK == res)
@@ -2935,12 +3207,9 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // configure the SSI
-    if(6 == state->phase)
+    if(20 == state->phase)
     {
-        //  0 << 21 : Standard 1-bit SPI serial frames
-        // 31 << 16 : 32 clocks per data frame
-        //  3 <<  8 : Send instr + addr, receive data
-        res = step_write_ap(&(XIP_SSI->CTRLR0), 0x200300);
+        res = step_write_ap(&(XIP_SSI->CTRLR0), 0x005f0300 ); // magic value needed by XiP peripheral
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -2952,13 +3221,22 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // configure the SPI
-    if(7 == state->phase)
+    if(21 == state->phase)
     {
-        // 3 << 24 : Standard 03h read
-        // 2 <<  8 : 8-bit instruction prefix
-        // 6 <<  2 : 24-bit addressing for 03h commands
-        // 0 <<  0 : Command and address both in serial format
-        res = step_write_ap(&(XIP_SSI->SPI_CTRLR0), 0x3000218);
+        res = step_write_ap(&(XIP_SSI->SPI_CTRLR0), 0xa0002022); // magic value needed by XiP peripheral
+        if(RESULT_OK == res)
+        {
+            state->phase++;
+        }
+        else
+        {
+            return res;
+        }
+    }
+
+    if(22 == state->phase)
+    {
+        res = step_write_ap(&(XIP_SSI->CTRLR1), 0);
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -2970,7 +3248,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     }
 
     // enable SSI
-    if(8 == state->phase)
+    if(23 == state->phase)
     {
         res = step_write_ap(&(XIP_SSI->SSIENR), 1);
         if(RESULT_OK == res)
@@ -2985,7 +3263,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     // end of flash_enter_cmd_xip()
 
-    if(9 == state->phase)
+    if(24 == state->phase)
     {
         return RESULT_OK;
     }
