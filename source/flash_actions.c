@@ -2012,7 +2012,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         res = act_read_register(&act_state, &(XIP_SSI->DR0), &val);  // skip a byte
         if(RESULT_OK == res)
         {
-            debug_line("INFO: skip status as 0x%02lx!",val );
+            // debug_line("INFO: skip status as 0x%02lx!",val );
             state->phase++;
             act_state.first_call = true;
         }
@@ -2817,8 +2817,6 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
 Result flash_enter_XIP(flash_action_data_typ* const state)
 {
     Result res;
-    static uint32_t db_phase = 0;
-    static uint32_t db_cnt = 0;
 
     if(NULL == state)
     {
@@ -2832,22 +2830,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
         state->phase = 0;
         state->first_call = false;
         act_state.first_call =true;
-        db_phase = 0;
-        db_cnt = 0;
         cnt = 0;
-    }
-    else
-    {
-        if(db_phase != state->phase)
-        {
-            debug_line("dbg:p= %ld", state->phase);
-            db_phase = state->phase;  // just once
-        }
-        if(db_cnt != cnt)
-        {
-            debug_line("dbg:c= %ld", cnt);
-            db_cnt = cnt;  // just once
-        }
     }
 
     // do the initial read (command + Address + continuation code + read)
