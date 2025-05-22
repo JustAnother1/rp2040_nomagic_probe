@@ -348,36 +348,6 @@ Result flash_driver_write(flash_driver_data_typ* const state)
         else
         {
             return RESULT_OK;
-            /*
-            uint32_t length = flash_write_buffer_get_length_available_no_waiting();
-            if(1 > length)
-            {
-                // nothing to write anymore
-                // -> we are done here
-                return RESULT_OK;
-            }
-            else
-            {
-                // some bytes remaining
-                uint32_t address = flash_write_buffer_get_write_address();
-                uint8_t* data = flash_write_buffer_get_data_block();
-                res = flash_write_page(&action_state, address, data, length);
-                if(ERR_NOT_COMPLETED == res)
-                {
-                    // Try again next time
-                    return res;
-                }
-                if(RESULT_OK != res)
-                {
-                    debug_line("ERROR: writing page failed !");
-                    return res;
-                }
-                // page was successfully written
-                flash_write_buffer_remove_block();
-                action_state.first_call = true;
-                return ERR_NOT_COMPLETED;
-            }
-            */
         }
     }
 
