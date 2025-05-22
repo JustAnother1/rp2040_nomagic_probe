@@ -347,6 +347,8 @@ Result flash_driver_write(flash_driver_data_typ* const state)
         }
         else
         {
+            return RESULT_OK;
+            /*
             uint32_t length = flash_write_buffer_get_length_available_no_waiting();
             if(1 > length)
             {
@@ -375,6 +377,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
                 action_state.first_call = true;
                 return ERR_NOT_COMPLETED;
             }
+            */
         }
     }
 
@@ -509,25 +512,12 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
         debug_line("Finishing write,...");
     }
 
-    // finish writing to flash
-    uint32_t length = flash_write_buffer_get_length_available_waiting();
-    if(1 > length)
+    if(true == flash_write_buffer_has_data_block())
     {
-        // nothing to write anymore
-        debug_line("nothing to write anymore.");
-        // -> we are done here
-        // after a completed Write everything can happen
-        // -> we might need to initialize the Flash again
-        flash_initialized = false;
-        return RESULT_OK;
-    }
-    else
-    {
-        // some bytes remaining
-        Result res;
+        // a full flash block still available -> write that
         uint32_t address = flash_write_buffer_get_write_address();
         uint8_t* data = flash_write_buffer_get_data_block();
-        res = flash_write_page(&action_state, address, data, length);
+        Result res = flash_write_page(&action_state, address, data, 256);
         if(ERR_NOT_COMPLETED == res)
         {
             // Try again next time
@@ -539,14 +529,49 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
             return res;
         }
         // page was successfully written
-        debug_line("wrote remaining %ld bytes", length);
         flash_write_buffer_remove_block();
-        // after a completed Write everything can happen
-        // -> we might need to initialize the Flash again
-        flash_initialized = false;
+        action_state.first_call = true;
+        return ERR_NOT_COMPLETED;
     }
-
-    return RESULT_OK;
+    else
+    {
+        // only less than a full block available -> write those last bytes
+        uint32_t length = flash_write_buffer_get_length_available_waiting();
+        if(1 > length)
+        {
+            // nothing to write anymore -> we are done here
+            debug_line("nothing to write anymore.");
+            // after a completed Write everything can happen
+            // -> we might need to initialize the Flash again
+            flash_initialized = false;
+            return RESULT_OK;
+        }
+        else
+        {
+            // some bytes remaining
+            Result res;
+            uint32_t address = flash_write_buffer_get_write_address();
+            uint8_t* data = flash_write_buffer_get_data_block();
+            res = flash_write_page(&action_state, address, data, length);
+            if(ERR_NOT_COMPLETED == res)
+            {
+                // Try again next time
+                return res;
+            }
+            if(RESULT_OK != res)
+            {
+                debug_line("ERROR: writing page failed !");
+                return res;
+            }
+            // page was successfully written
+            debug_line("wrote remaining %ld bytes", length);
+            flash_write_buffer_remove_block();
+            // after a completed Write everything can happen
+            // -> we might need to initialize the Flash again
+            flash_initialized = false;
+            return ERR_NOT_COMPLETED;
+        }
+    }
 }
 
 Result flash_driver_enter_xip_mode(flash_driver_data_typ* const state)

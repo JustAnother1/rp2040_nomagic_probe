@@ -86,6 +86,12 @@ void target_init(void)
     common_target_init();
 }
 
+void target_re_init(void)
+{
+    flash_write_buffer_clear();
+    flash_driver_init();
+}
+
 void target_tick(void)
 {
     common_target_tick();
@@ -328,7 +334,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     res = flash_write_buffer_add_data(start_address, length, data);
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: flash write buffer issue !");
+        debug_line("ERROR: flash write buffer issue ! (%ld)", res);
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
