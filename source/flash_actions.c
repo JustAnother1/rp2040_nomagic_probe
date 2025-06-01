@@ -2126,7 +2126,7 @@ static Result flash_erase_param(flash_action_data_typ* const state, uint32_t sta
         if(0xff == status)
         {
             // something is wrong here
-            debug_line("ERROR: could not read QSPI Flash status !");
+            debug_error("ERROR: could not read QSPI Flash status !");
             return ERR_TARGET_ERROR;
         }
         if(status & STATUS_REGISTER_BUSY)
@@ -2159,17 +2159,17 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         // write up to 256 bytes
         if(start_address < 0x10000000)
         {
-            debug_line("ERROR: invalid start address(0x%08lx)", start_address);
+            debug_error("ERROR: invalid start address(0x%08lx)", start_address);
             return ERR_WRONG_VALUE;
         }
         if(0 != (start_address & 0xffu))
         {
-            debug_line("ERROR: start address not aligned (0x%08lx)", start_address);
+            debug_error("ERROR: start address not aligned (0x%08lx)", start_address);
             return ERR_WRONG_VALUE;
         }
         if(256 < length)
         {
-            debug_line("ERROR: write too long (%ld)", length);
+            debug_error("ERROR: write too long (%ld)", length);
             return ERR_WRONG_VALUE;
         }
 
@@ -2810,7 +2810,7 @@ Result flash_write_page(flash_action_data_typ* const state, uint32_t start_addre
         }
     }
 
-    debug_line("ERROR: wrong state (%ld) in flash_write_page()!", state->phase);
+    debug_error("ERROR: wrong state (%ld) in flash_write_page()!", state->phase);
     return ERR_WRONG_STATE;
 }
 
@@ -2820,7 +2820,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     if(NULL == state)
     {
-        debug_line("ERROR: state is NULL !");
+        debug_error("ERROR: state is NULL !");
         return ERR_ACTION_NULL;
     }
 

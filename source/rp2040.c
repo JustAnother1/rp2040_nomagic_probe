@@ -142,7 +142,7 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len)
     }
     else if(0 == strncmp(filename, "threads", 7))
     {
-        send_part(THREADS_CONTENT, sizeof(THREADS_CONTENT), offset, len);
+        send_part(THREADS_CONTENT, sizeof(THREADS_CONTENT), offset, len);  // TODO fix for dual core
         return;
     }
     else if(0 == strncmp(filename, "memory-map", 10))
@@ -151,7 +151,7 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len)
         return;
     }
 
-    debug_line("xfer:file invalid");
+    debug_error("xfer:file invalid");
     // if we reach this, then the request was invalid
     reply_packet_prepare();
     reply_packet_add("E00");
@@ -187,7 +187,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
         }
         if(RESULT_OK != res)
         {
-            debug_line("ERROR: finishing erase failed !");
+            debug_error("ERROR: finishing erase failed !");
             reply_packet_prepare();
             reply_packet_add(ERROR_TARGET_FAILED);
             reply_packet_send();
@@ -209,7 +209,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
         }
         if(RESULT_OK != res)
         {
-            debug_line("ERROR: finishing write failed !");
+            debug_error("ERROR: finishing write failed !");
             reply_packet_prepare();
             reply_packet_add(ERROR_TARGET_FAILED);
             reply_packet_send();
@@ -232,7 +232,7 @@ Result handle_target_reply_vFlashDone(action_data_typ* const action)
         }
         if(RESULT_OK != res)
         {
-            debug_line("ERROR: enter XiP mode failed !");
+            debug_error("ERROR: enter XiP mode failed !");
             reply_packet_prepare();
             reply_packet_add(ERROR_TARGET_FAILED);
             reply_packet_send();
@@ -263,7 +263,7 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     if(ADDRESS_LENGTH != action->gdb_parameter.type)
     {
         // wrong parameter type
-        debug_line("ERROR: wrong parameter type !");
+        debug_error("ERROR: wrong parameter type !");
         reply_packet_prepare();
         reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
         reply_packet_send();
@@ -285,7 +285,7 @@ Result handle_target_reply_vFlashErase(action_data_typ* const action)
     }
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: adding erase range failed !");
+        debug_error("ERROR: adding erase range failed !");
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
@@ -315,7 +315,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     if(ADDRESS_MEMORY != action->gdb_parameter.type)
     {
         // wrong parameter type
-        debug_line("ERROR: wrong parameter type !");
+        debug_error("ERROR: wrong parameter type !");
         reply_packet_prepare();
         reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
         reply_packet_send();
@@ -334,7 +334,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     res = flash_write_buffer_add_data(start_address, length, data);
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: flash write buffer issue ! (%ld)", res);
+        debug_error("ERROR: flash write buffer issue ! (%ld)", res);
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
@@ -348,7 +348,7 @@ Result handle_target_reply_vFlashWrite(action_data_typ* const action)
     }
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: flash write failed !");
+        debug_error("ERROR: flash write failed !");
         reply_packet_prepare();
         reply_packet_add(ERROR_TARGET_FAILED);
         reply_packet_send();
@@ -405,7 +405,7 @@ Result handle_target_reply_read_memory(action_data_typ* const action)
         if(ADDRESS_LENGTH != action->gdb_parameter.type)
         {
             // wrong parameter type
-            debug_line("ERROR: wrong parameter type !");
+            debug_error("ERROR: wrong parameter type !");
             reply_packet_add(ERROR_CODE_INVALID_PARAMETER_FORMAT_TYPE);
             reply_packet_send();
             return ERR_WRONG_VALUE;
@@ -475,6 +475,6 @@ Result target_write(uint32_t start_address, uint8_t* data, uint32_t length)
     (void) start_address;
     (void) data;
     (void) length;
-    debug_line("ERROR: target_write() not implemented !!!");
+    debug_error("ERROR: target_write() not implemented !!!");
     return RESULT_OK;
 }

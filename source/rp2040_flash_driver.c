@@ -87,7 +87,7 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
                 if(RESULT_OK != res)
                 {
                     flash_erase_ongoing = false;
-                    debug_line("ERROR: flash initialization failed(%ld) !", res);
+                    debug_error("ERROR: flash initialization failed(%ld) !", res);
                     return res;
                 }
                 // OK
@@ -116,7 +116,7 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
                 if(RESULT_OK != res)
                 {
                     flash_erase_ongoing = false;
-                    debug_line("ERROR: erase 64kB failed !");
+                    debug_error("ERROR: erase 64kB failed !");
                     return res;
                 }
                 else
@@ -163,7 +163,7 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
                     if(RESULT_OK != res)
                     {
                         flash_erase_ongoing = false;
-                        debug_line("ERROR: erase 64kB failed !");
+                        debug_error("ERROR: erase 64kB failed !");
                         return res;
                     }
                     else
@@ -200,7 +200,7 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
                 if(RESULT_OK != res)
                 {
                     flash_erase_ongoing = false;
-                    debug_line("ERROR: finishing erase failed !");
+                    debug_error("ERROR: finishing erase failed !");
                     return res;
                 }
                 else
@@ -228,7 +228,7 @@ Result flash_driver_add_erase_range(flash_driver_data_typ* const state, uint32_t
                     if(RESULT_OK != res)
                     {
                         flash_erase_ongoing = false;
-                        debug_line("ERROR: erase 64kB failed !");
+                        debug_error("ERROR: erase 64kB failed !");
                         return res;
                     }
                     else
@@ -263,7 +263,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
 
     if(NULL == state)
     {
-        debug_line("ERROR: flash write: state is NULL !");
+        debug_error("ERROR: flash write: state is NULL !");
         return ERR_ACTION_NULL;
     }
 
@@ -289,7 +289,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             flash_erase_ongoing = false;
             if(RESULT_OK != res)
             {
-                debug_line("ERROR: finishing erase failed !");
+                debug_error("ERROR: finishing erase failed !");
                 return res;
             }
         }
@@ -312,7 +312,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             if(RESULT_OK != res)
             {
                 flash_erase_ongoing = false;
-                debug_line("ERROR: flash initialization failed !");
+                debug_error("ERROR: flash initialization failed !");
                 return res;
             }
             // OK
@@ -337,7 +337,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
             }
             if(RESULT_OK != res)
             {
-                debug_line("ERROR: writing page failed !");
+                debug_error("ERROR: writing page failed !");
                 return res;
             }
             // page was successfully written
@@ -351,7 +351,7 @@ Result flash_driver_write(flash_driver_data_typ* const state)
         }
     }
 
-    debug_line("ERROR: flash write: wrong state !");
+    debug_error("ERROR: flash write: wrong state !");
     return ERR_WRONG_STATE;
 }
 
@@ -389,7 +389,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
         if(RESULT_OK != res)
         {
             flash_erase_ongoing = false;
-            debug_line("ERROR: erase 64kB failed !");
+            debug_error("ERROR: erase 64kB failed !");
             return res;
         }
         else
@@ -414,7 +414,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
         if(RESULT_OK != res)
         {
             flash_erase_ongoing = false;
-            debug_line("ERROR: erase 32kB failed !");
+            debug_error("ERROR: erase 32kB failed !");
             return res;
         }
         else
@@ -439,7 +439,7 @@ Result flash_driver_erase_finish(flash_driver_data_typ* const state)
         if(RESULT_OK != res)
         {
             flash_erase_ongoing = false;
-            debug_line("ERROR: erase 4kB failed (%ld/%ld)!", action_state.phase, res);
+            debug_error("ERROR: erase 4kB failed (%ld/%ld)!", action_state.phase, res);
             return res;
         }
         else
@@ -495,7 +495,7 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
         }
         if(RESULT_OK != res)
         {
-            debug_line("ERROR: writing page failed !");
+            debug_error("ERROR: writing page failed !");
             return res;
         }
         // page was successfully written
@@ -530,7 +530,7 @@ Result flash_driver_write_finish(flash_driver_data_typ* const state)
             }
             if(RESULT_OK != res)
             {
-                debug_line("ERROR: writing page failed !");
+                debug_error("ERROR: writing page failed !");
                 return res;
             }
             // page was successfully written
@@ -566,7 +566,7 @@ Result flash_driver_enter_xip_mode(flash_driver_data_typ* const state)
     }
     if(RESULT_OK != res)
     {
-        debug_line("ERROR: switching to XiP mode failed (%ld in %ld)!", res, action_state.phase);
+        debug_error("ERROR: switching to XiP mode failed (%ld in %ld)!", res, action_state.phase);
         return res;
     }
 
