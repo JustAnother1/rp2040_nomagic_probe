@@ -15,6 +15,14 @@ Additional documentation can be created by doing
 
 the created documentation is then located in the build/doxygen/ folder.
 
+== getting the source
+
+to clone the repository do
+
++git clone --recurse-submodules https://codeberg.org/JustAnother1/rp2040_nomagic_probe+
+
+The "--recurse-submodules" is necessary to get the nomagic_probe submodule that contains the device independednt part of the source code.
+
 == building and starting
 
 The firmware can be build using make. The generated Files will be placed in the bin folder. For details try
