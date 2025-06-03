@@ -19,6 +19,7 @@
 
 #include "probe_api/common.h"
 #include "probe_api/cortex-m.h"
+#include "probe_api/cortex-m_actions.h"
 #include "probe_api/debug_log.h"
 #include "probe_api/flash_write_buffer.h"
 #include "probe_api/gdb_error_codes.h"
@@ -467,6 +468,11 @@ Result handle_target_reply_read_memory(action_data_typ* const action)
     }
 
     return ERR_WRONG_STATE;
+}
+
+bool target_command_halt_cpu(void)
+{
+    return target_command_halt_cortex_m_cpu();
 }
 
 Result target_write(uint32_t start_address, uint8_t* data, uint32_t length)

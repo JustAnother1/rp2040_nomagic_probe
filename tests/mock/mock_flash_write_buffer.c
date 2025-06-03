@@ -23,6 +23,11 @@ void flash_write_buffer_init(uint32_t block_size_bytes)
     (void)block_size_bytes;
 }
 
+void flash_write_buffer_clear(void)
+{
+
+}
+
 // new data arrived from gdb
 Result flash_write_buffer_add_data(uint32_t start_address, uint32_t length, uint8_t* data)
 {

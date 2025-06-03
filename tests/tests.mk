@@ -25,6 +25,7 @@ RP2040_OBJS =                                                          \
  $(TEST_BIN_FOLDER)mock/mock_flash_write_buffer.o                      \
  $(TEST_BIN_FOLDER)mock/mock_hex.o                                     \
  $(TEST_BIN_FOLDER)mock/mock_steps.o                                   \
+ $(TEST_BIN_FOLDER)mock/mock_cortex-m_actions.o                        \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/gdbserver/gdbserver_mock.o \
  $(TEST_BIN_FOLDER)nomagic_probe/tests/mock/lib/printf_mock.o          \
  $(TEST_BIN_FOLDER)nomagic_probe/src/lib/printf.o                      \

@@ -113,6 +113,7 @@ include target_src/target.mk
 SRC += $(SRC_FOLDER)rp2040.c
 SRC += $(SRC_FOLDER)rp2040_flash_driver.c
 SRC += $(NOMAGIC_FOLDER)src/target/flash_write_buffer.c
+SRC += $(NOMAGIC_FOLDER)src/target/cortex-m_actions.c
 ifeq ($(EXECUTE_CODE_ON_TARGET), yes)
 	DDEFS += -DFEAT_EXECUTE_CODE_ON_TARGET
 	SRC += $(SRC_FOLDER)flash_actions_on_target.c

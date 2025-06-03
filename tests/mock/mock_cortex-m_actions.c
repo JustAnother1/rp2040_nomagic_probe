@@ -13,16 +13,19 @@
  *
  */
 
-#ifndef SOURCE_CFG_TARGET_ACTIONS_H_
-#define SOURCE_CFG_TARGET_ACTIONS_H_
-
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include "probe_api/result.h"
+#include "probe_api/common.h"
 
-// writing/erasing the flash is target specific
-Result handle_target_reply_vFlashDone(action_data_typ* const action);
-Result handle_target_reply_vFlashErase(action_data_typ* const action);
-Result handle_target_reply_vFlashWrite(action_data_typ* const action);
-// reading some special regions of the memory might be target specific
-Result handle_target_reply_read_memory(action_data_typ* const action);
+bool target_command_halt_cortex_m_cpu(void)
+{
+    return false;
+}
 
-#endif /* SOURCE_CFG_TARGET_ACTIONS_H_ */
+
+Result handle_cortex_m_halt(action_data_typ* const action)
+{
+    return ERR_WRONG_STATE;
+}

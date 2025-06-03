@@ -19,16 +19,19 @@
 #define TARGET_SPECIFIC_ACTIONS_ENUM \
     GDB_CMD_MON_HALT,                \
     GDB_CMD_MON_RESET,               \
-    GDB_MONITOR_REG,
+    GDB_MONITOR_REG,                 \
+    HALT_CORTEX_M_CPU,
 
 #define TARGET_SPECIFIC_ACTION_HANDLERS                     \
     handle_monitor_halt,       /* GDB_CMD_MON_HALT */       \
     handle_monitor_reset,      /* GDB_CMD_MON_RESET */      \
-    handle_monitor_reg,        /* GDB_MONITOR_REG, */
+    handle_monitor_reg,        /* GDB_MONITOR_REG, */       \
+    handle_cortex_m_halt,      /* HALT_CORTEX_M_CPU */
 
 #define TARGET_SPECIFIC_ACTION_NAMES \
     "monitor_halt",                  \
     "monitor_reset",                 \
-    "monitor_reg",
+    "monitor_reg",                   \
+    "cortex-m_halt"
 
 #endif /* CFG_TARGET_SPECIFIC_ACTIONS_H_ */
