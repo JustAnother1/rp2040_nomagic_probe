@@ -67,7 +67,7 @@
 #define MEMORY_MAP_CONTENT  \
 "<memory-map>\r\n" \
     "<memory type=\"rom\" start=\"0x00000000\" length=\"0x00004000\"/>\r\n" \
-    "<memory type=\"flash\" start=\"0x10000000\" length=\"0x4000000\">\r\n" \
+    "<memory type=\"flash\" start=\"0x10000000\" length=\"0x1000000\">\r\n" \
         "<property name=\"blocksize\">0x1000</property>\r\n" \
     "</memory>\r\n" \
     "<memory type=\"ram\" start=\"0x20000000\" length=\"0x20042000\"/>\r\n" \

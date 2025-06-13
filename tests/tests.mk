@@ -126,12 +126,12 @@ $(TEST_BIN_FOLDER)%.txt: $(TEST_BIN_FOLDER)%
 # report results
 test: $(TEST_LOGS)
 	@echo ""
+	@echo "-----------------------\nPASSED:\n-----------------------"
+	@echo "$(PASSED)"
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORES)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo "$(FAILURES)"
-	@echo "-----------------------\nPASSED:\n-----------------------"
-	@echo "$(PASSED)"
 	@echo "\nDONE"
 
 
