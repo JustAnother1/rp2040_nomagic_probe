@@ -21,8 +21,14 @@ OBJDUMP = arm-none-eabi-objdump
 TST_CC = gcc
 TST_LD = cc
 
-# configuration
-# =============
+# folders
+# =======
+BIN_FOLDER = build/
+SRC_FOLDER = source/
+NOMAGIC_FOLDER = nomagic_probe/
+
+# features
+# ========
 # 
 # Some firmware features can be anabled and disabled as needed for the different scenarios.
 # they are listed here:
@@ -31,7 +37,7 @@ TST_LD = cc
 #
 # - HAS_CLI = yes
 #       Command line interface(CLI provides commands to directly controll the fimrware and to inspect he firmwares internal state.
-#       Must be used in combination with either "HAS_DEBUG_UART = yes" or "HAS_DEBUG_CDC = yes" !
+#       Must be used in combination with either "HAS_DEBUG_TCP_IP = yes", "HAS_DEBUG_UART = yes" or "HAS_DEBUG_CDC = yes" !
 #
 # - HAS_DEBUG_UART = yes
 #       Command Line Interface (CLI) on UART pins.
@@ -45,38 +51,46 @@ TST_LD = cc
 # - HAS_NCM = yes
 #       USB Network interface. Allows other interfaces to be available as TCP Ports.
 #
+# - HAS_DEBUG_TCP_IP = yes
+#       Command Line Interface (CLI) on TCP Port. Can only be used with "HAS_NCM = yes".
+#
 # - USE_BOOT_ROM = yes
 #       use the functions stored in the boot rom in the RP2040 to access the QSPI flash.
 #
 # - EXECUTE_CODE_ON_TARGET = yes
 #       download code to target RAM and execute there (used for Flash erase, Flash program,..)
-
-BIN_FOLDER = build/
-SRC_FOLDER = source/
-NOMAGIC_FOLDER = nomagic_probe/
-
+#
+# - HAS_TARGET_UART = yes
+#       connect host to UART of the target.
 
 HAS_MSC = yes
-HAS_DEBUG_UART = yes
+HAS_DEBUG_UART = no
 HAS_DEBUG_CDC = no
+HAS_DEBUG_TCP_IP = yes
 HAS_CLI = yes
 HAS_GDB_SERVER = yes
 HAS_NCM = yes
 USE_BOOT_ROM = no
 EXECUTE_CODE_ON_TARGET = no
+HAS_TARGET_UART = no
 
-DDEFS = -DLOOP_MONITOR=1
 
+# DDEFS = -DLOOP_MONITOR=1
 # tinyUSB logging has different levels 0 = no logging,1 = some logging, 2 = more logging, 3= all logging
-DDEFS += -DCFG_TUSB_DEBUG=1
+# DDEFS += -DCFG_TUSB_DEBUG=1
 # with this (=1)the watchdog is only active if the debugger is not connected
 DDEFS += -DDISABLE_WATCHDOG_FOR_DEBUG=0
 # use both cores
-#DDEFS += -DENABLE_CORE_1=1
-DDEFS += -DLWIP_DEBUG=1
+# DDEFS += -DENABLE_CORE_1=1
+# DDEFS += -DLWIP_DEBUG=1
+DDEFS += -DLWIP_NOASSERT
 
+
+# compile flags
+# =============
 CFLAGS  = -c -ggdb3 -MMD -MP
-CFLAGS += -O3
+# CFLAGS += -O3
+CFLAGS += -Os
 # sometimes helps with debugging:
 # CFLAGS += -O0
 # CFLAGS += -save-temps=obj
@@ -84,6 +98,8 @@ CFLAGS += -O3
 CFLAGS += -std=c17
 CFLAGS += -mcpu=cortex-m0plus -mthumb
 CFLAGS += -ffreestanding -funsigned-char
+CFLAGS += -fno-builtin -fno-builtin-function
+CFLAGS += -nostdlib -nolibc -nodefaultlibs 
 # -fno-short-enums
 CFLAGS += -Wall -Wextra -pedantic -Wshadow -Wdouble-promotion -Wconversion 
 # -Wpadded : tinyUSB creates warnings with this enabled. :-( 
@@ -93,11 +109,11 @@ CFLAGS += -ffunction-sections -fdata-sections
 LFLAGS  = -ffreestanding -nostartfiles
 # disabled the following due to this issue:
 # undefined reference to `__gnu_thumb1_case_si'
-LFLAGS += -nostdlib -nolibc -nodefaultlibs 
+#LFLAGS += -nostdlib -nolibc -nodefaultlibs 
 LFLAGS += -specs=nosys.specs
 LFLAGS += -fno-builtin -fno-builtin-function
 # https://wiki.osdev.org/Libgcc : All code compiled with GCC must be linked with libgcc. 
-#LFLAGS += -lgcc
+LFLAGS += -lgcc
 LFLAGS += -Wl,--gc-sections,-Map=$(BIN_FOLDER)$(PROJECT).map,--print-memory-usage -g
 LFLAGS += -fno-common -T$(LKR_SCRIPT)
 
