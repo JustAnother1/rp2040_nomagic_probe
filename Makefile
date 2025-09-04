@@ -12,6 +12,19 @@ PROBE_NAME = "rp2040 "
 ifdef OS
 	# windows
 	OS_NAME = $(OS)
+	CP = arm-none-eabi-objcopy
+    CC = arm-none-eabi-gcc
+    LD = arm-none-eabi-gcc
+    SIZE = arm-none-eabi-size
+    MKDIR_P = mkdir -p
+    HEX = $(CP) -O ihex
+    BIN = $(CP) -O binary -S
+    DIS = $(CP) -S
+    OBJDUMP = arm-none-eabi-objdump
+    TST_CC = gcc
+    TST_LD = cc
+    RM_RF = rm -rf
+    CAT = cat
 else
     CP = arm-none-eabi-objcopy
     CC = arm-none-eabi-gcc
