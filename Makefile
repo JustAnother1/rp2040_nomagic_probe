@@ -9,17 +9,25 @@ PROBE_NAME = "rp2040 "
 
 # tools
 # =====
-CP = arm-none-eabi-objcopy
-CC = arm-none-eabi-gcc
-LD = arm-none-eabi-gcc
-SIZE = size
-MKDIR_P = mkdir -p
-HEX = $(CP) -O ihex
-BIN = $(CP) -O binary -S
-DIS = $(CP) -S
-OBJDUMP = arm-none-eabi-objdump
-TST_CC = gcc
-TST_LD = cc
+ifdef OS
+	# windows
+	OS_NAME = $(OS)
+else
+    CP = arm-none-eabi-objcopy
+    CC = arm-none-eabi-gcc
+    LD = arm-none-eabi-gcc
+    SIZE = size
+    MKDIR_P = mkdir -p
+    HEX = $(CP) -O ihex
+    BIN = $(CP) -O binary -S
+    DIS = $(CP) -S
+    OBJDUMP = arm-none-eabi-objdump
+    TST_CC = gcc
+    TST_LD = cc
+    RM_RF = rm -rf
+    CAT = cat
+    OS_NAME := $(shell uname -s | tr A-Z a-z)
+endif
 
 # folders
 # =======
@@ -64,15 +72,15 @@ NOMAGIC_FOLDER = nomagic_probe/
 #       connect host to UART of the target.
 
 HAS_MSC = yes
-HAS_DEBUG_UART = no
+HAS_DEBUG_UART = yes
 HAS_DEBUG_CDC = no
-HAS_DEBUG_TCP_IP = yes
+HAS_DEBUG_TCP_IP = no
 HAS_CLI = yes
 HAS_GDB_SERVER = yes
-HAS_NCM = yes
+HAS_NCM = no
 USE_BOOT_ROM = no
 EXECUTE_CODE_ON_TARGET = no
-HAS_TARGET_UART = no
+HAS_TARGET_UART = yes
 
 
 # DDEFS = -DLOOP_MONITOR=1
@@ -206,6 +214,7 @@ all: $(BIN_FOLDER)$(PROJECT).uf2 $(BIN_FOLDER)$(PROJECT).bin
 	@echo "size"
 	@echo "===="
 	$(SIZE) --format=GNU $(BIN_FOLDER)$(PROJECT).elf
+	@echo build on $(OS_NAME)
 
 ifeq ($(EXECUTE_CODE_ON_TARGET), yes)
 $(BIN_FOLDER)%o: %c target_src/target_progs.c
@@ -237,7 +246,7 @@ doc:
 	doxygen
 
 clean:
-	@rm -rf $(BIN_FOLDER)/* tests/$(PROJECT)_tests tests/bin/ $(CLEAN_RM)
+	@$(RM_RF) $(BIN_FOLDER)/* tests/$(PROJECT)_tests tests/bin/ $(CLEAN_RM)
 
 .PHONY: help clean flash all list test doc $(BIN_FOLDER)version.h
 
