@@ -84,6 +84,7 @@ NOMAGIC_FOLDER = nomagic_probe/
 # - HAS_TARGET_UART = yes
 #       connect host to UART of the target.
 
+BOARD = PICO
 HAS_MSC = yes
 HAS_DEBUG_UART = yes
 HAS_DEBUG_CDC = no
