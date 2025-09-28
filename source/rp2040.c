@@ -477,6 +477,11 @@ bool target_command_halt_cpu(void)
     return target_command_halt_cortex_m_cpu();
 }
 
+bool target_command_release_cpu(void)
+{
+    return target_command_release_cortex_m_cpu();
+}
+
 Result target_write(uint32_t start_address, uint8_t* data, uint32_t length)
 {
     // TODO

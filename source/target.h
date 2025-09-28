@@ -54,5 +54,6 @@ void target_send_file(char* filename, uint32_t offset, uint32_t len);
 Result target_write(uint32_t start_address, uint8_t* data, uint32_t length);
 
 bool target_command_halt_cpu(void);
+bool target_command_release_cpu(void);
 
 #endif /* SOURCE_TARGET_H_ */
