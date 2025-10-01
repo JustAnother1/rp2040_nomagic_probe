@@ -1,0 +1,5 @@
+.cache/
+.config_orig/
+filetree_config.btl
+window_config.btl
+*output*.txt

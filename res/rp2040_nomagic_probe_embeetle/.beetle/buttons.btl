@@ -1,0 +1,67 @@
+# =========================================================================
+# 💡 USER-DEFINED BUTTONS CONFIGURATION 💡
+# =========================================================================
+# This file defines the toolbar buttons for your Embeetle project.
+# It uses a standard JSON format, but with a powerful twist: it's a
+# Jinja template! This allows you to use variables to dynamically
+# customize button behavior.
+#
+# HOW TO USE JINJA:
+# -----------------
+# 1. Use double curly braces `{{ variable_name }}` to insert values from
+#    the Jinja environment dictionary. For instance, `{{ make }}` will be
+#    replaced with the full path to your `make` executable.
+# 2. You can use these variables in any string field. For example, to use
+#    the project's build directory, simply write `{{ build_directory }}`.
+#
+# AVAILABLE VARIABLES:
+# --------------------
+# The following variables are available for templating:
+#   - `{{ make }}`: The path to the `make` executable.
+#   - `{{ makefile }}`: The path to the project's `Makefile`.
+#   - `{{ build_directory }}`: The path to the build output directory.
+#   - `{{ compiler }}`: The path to the compiler executable (e.g., GCC).
+#
+# TIP: For a quick reference of available icon paths, check the
+#      'beetle_core/resources/icons/' folder within your Embeetle
+#      installation directory.
+#
+# =========================================================================
+
+{
+    "clean":
+    {
+        "icon": "icons/gen/clean.png",
+        "hover-text": "Run 'clean' target in makefile",
+        "help-text": "Run 'clean' target in makefile",
+        "shortcut": "F2",
+        "current-working-directory": "/home/lars/loeschen/embeetle/rp2040_nomagic_probe/source",
+        "commands": [
+            "{{ make }} clean"
+        ]
+    },
+    
+    "all":
+    {
+        "icon": "icons/gen/build.png",
+        "hover-text": "Run 'all' target in makefile",
+        "help-text": "Run 'all' target in makefile",
+        "shortcut": "F5",
+        "current-working-directory": "/home/lars/loeschen/embeetle/rp2040_nomagic_probe/source",
+        "commands": [
+            "{{ make }} all"
+        ]
+    },
+
+    "flash":
+    {
+        "icon": "icons/chip/flash.png",
+        "hover-text": "Run 'flash' target in makefile",
+        "help-text": "Run 'flash' target in makefile",
+        "shortcut": "F4",
+        "current-working-directory": "/home/lars/loeschen/embeetle/rp2040_nomagic_probe/source",
+        "commands": [
+            "{{ make }} flash"
+        ]
+    }
+}
