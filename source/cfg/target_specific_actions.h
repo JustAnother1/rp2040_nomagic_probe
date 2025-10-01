@@ -34,6 +34,7 @@
     "monitor_halt",                  \
     "monitor_reset",                 \
     "monitor_reg",                   \
-    "cortex-m_halt"
+    "cortex-m_halt",                 \
+    "cortex-m_release",
 
 #endif /* CFG_TARGET_SPECIFIC_ACTIONS_H_ */
