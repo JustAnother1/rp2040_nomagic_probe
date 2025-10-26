@@ -201,7 +201,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(8 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD0),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[0]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD0_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD0_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD0_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD0_PDE_OFFSET)         // Pull down enable
@@ -220,7 +220,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(9 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD1),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[1]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD1_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD1_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD1_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD1_PDE_OFFSET)         // Pull down enable
@@ -240,7 +240,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(10 == state->phase)
     {
         // put pull-up on SD2/SD3 as these may be used as WPn/HOLDn
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD2),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[2]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD2_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD2_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD2_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD2_PUE_OFFSET)         // Pull up enable
@@ -259,7 +259,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(11 == state->phase)
     {
         // put pull-up on SD2/SD3 as these may be used as WPn/HOLDn
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD3),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[3]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD3_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD3_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD3_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD3_PUE_OFFSET)         // Pull up enable
@@ -623,7 +623,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(38 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR0),
+        res = step_write_ap(&(XIP_SSI->CTRLR[0]),
                                     // SSTE = Slave select toggle enable
                                     (1 << XIP_SSI_CTRLR0_SSTE_OFFSET) |
                                     (XIP_SSI_CTRLR0_SPI_FRF_STD << XIP_SSI_CTRLR0_SPI_FRF_OFFSET) | // QSPI frames / SPI Frames
@@ -648,7 +648,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(39 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR1), 0); // NDF = 0 = number of data frames used with Quad SPI
+        res = step_write_ap(&(XIP_SSI->CTRLR[1]), 0); // NDF = 0 = number of data frames used with Quad SPI
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -819,7 +819,7 @@ Result flash_initialize(flash_action_data_typ* const state)
             | (1 << PADS_QSPI_GPIO_QSPI_SD0_SCHMITT_OFFSET)    // enable schmitt trigger
             | (1 << PADS_QSPI_GPIO_QSPI_SD0_SLEWFAST_OFFSET);  // slew rate fast
 
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD0), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[0]), val);
 
         if(RESULT_OK == res)
         {
@@ -833,7 +833,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(49 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD1), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[1]), val);
 
         if(RESULT_OK == res)
         {
@@ -847,7 +847,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(50 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD2), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[2]), val);
 
         if(RESULT_OK == res)
         {
@@ -861,7 +861,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(51 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD3), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[3]), val);
 
         if(RESULT_OK == res)
         {
@@ -1067,7 +1067,7 @@ Result flash_initialize(flash_action_data_typ* const state)
             | (1 << PADS_QSPI_GPIO_QSPI_SD0_SCHMITT_OFFSET)    // enable schmitt trigger
             | (1 << PADS_QSPI_GPIO_QSPI_SD0_SLEWFAST_OFFSET);  // slew rate fast
 
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD0), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[0]), val);
 
         if(RESULT_OK == res)
         {
@@ -1081,7 +1081,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(63 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD1), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[1]), val);
 
         if(RESULT_OK == res)
         {
@@ -1095,7 +1095,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(64 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD2), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[2]), val);
 
         if(RESULT_OK == res)
         {
@@ -1109,7 +1109,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(65 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD3), val);
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[3]), val);
 
         if(RESULT_OK == res)
         {
@@ -1329,7 +1329,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(77 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD0),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[0]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD0_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD0_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD0_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD0_PDE_OFFSET)         // Pull down enable
@@ -1348,7 +1348,7 @@ Result flash_initialize(flash_action_data_typ* const state)
 
     if(78 == state->phase)
     {
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD1),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[1]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD1_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD1_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD1_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD1_PDE_OFFSET)         // Pull down enable
@@ -1368,7 +1368,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(79 == state->phase)
     {
         // put pull-up on SD2/SD3 as these may be used as WPn/HOLDn
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD2),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[2]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD2_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD2_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD2_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD2_PUE_OFFSET)         // Pull up enable
@@ -1388,7 +1388,7 @@ Result flash_initialize(flash_action_data_typ* const state)
     if(80 == state->phase)
     {
         // put pull-up on SD2/SD3 as these may be used as WPn/HOLDn
-        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD3),
+        res = step_write_ap(&(PADS_QSPI->GPIO_QSPI_SD[3]),
                                (1<< PADS_QSPI_GPIO_QSPI_SD3_IE_OFFSET)           // Input enable
                              | (PADS_QSPI_GPIO_QSPI_SD3_DRIVE_4MA << PADS_QSPI_GPIO_QSPI_SD3_DRIVE_OFFSET)
                              | (1 << PADS_QSPI_GPIO_QSPI_SD3_PUE_OFFSET)         // Pull up enable
@@ -2852,7 +2852,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     // configure the SSI
     if(1 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR0),
+        res = step_write_ap(&(XIP_SSI->CTRLR[0]),
                                     (XIP_SSI_CTRLR0_SPI_FRF_QUAD << XIP_SSI_CTRLR0_SPI_FRF_OFFSET) // QSPI frames / SPI Frames
                                     | (1 << XIP_SSI_CTRLR0_DFS_32_OFFSET) // 8 bits per data frame -> 2 clock in QSPI (value is n+1)
                                     | (7 << XIP_SSI_CTRLR0_CFS_OFFSET)    // 8 clocks per control fame (value is n+1)
@@ -2871,7 +2871,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     if(2 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR1), 3);  // read this many bytes
+        res = step_write_ap(&(XIP_SSI->CTRLR[1]), 3);  // read this many bytes
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -3192,7 +3192,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
     // configure the SSI
     if(20 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR0), 0x005f0300 ); // magic value needed by XiP peripheral
+        res = step_write_ap(&(XIP_SSI->CTRLR[0]), 0x005f0300 ); // magic value needed by XiP peripheral
         if(RESULT_OK == res)
         {
             state->phase++;
@@ -3219,7 +3219,7 @@ Result flash_enter_XIP(flash_action_data_typ* const state)
 
     if(22 == state->phase)
     {
-        res = step_write_ap(&(XIP_SSI->CTRLR1), 0);
+        res = step_write_ap(&(XIP_SSI->CTRLR[1]), 0);
         if(RESULT_OK == res)
         {
             state->phase++;
