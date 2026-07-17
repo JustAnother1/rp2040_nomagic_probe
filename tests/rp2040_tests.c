@@ -49,6 +49,7 @@ void test_get_apsel(void)
     TEST_ASSERT_EQUAL_UINT32(0, target_get_SWD_APSel(2));
 }
 
+#ifdef FEAT_CLI
 void test_target_info(void)
 {
     // Objective: make sure that cmd_target_info() finishes.
@@ -62,6 +63,7 @@ void test_target_info(void)
     }
     TEST_ASSERT_TRUE(99 > loop);
 }
+#endif
 
 void test_target_send_file_target_xml(void)
 {
@@ -98,7 +100,9 @@ int main(void)
     RUN_TEST(test_swd_v2);
     RUN_TEST(test_get_core_id);
     RUN_TEST(test_get_apsel);
+#ifdef FEAT_CLI
     RUN_TEST(test_target_info);
+#endif
     RUN_TEST(test_target_send_file_target_xml);
     RUN_TEST(test_target_send_file_threads);
     RUN_TEST(test_target_send_file_memory_map);

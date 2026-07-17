@@ -24,8 +24,18 @@ bool target_command_halt_cortex_m_cpu(void)
     return false;
 }
 
+bool target_command_release_cortex_m_cpu(void)
+{
+    return false;
+}
+
 
 Result handle_cortex_m_halt(action_data_typ* const action)
+{
+    return ERR_WRONG_STATE;
+}
+
+Result handle_cortex_m_release(action_data_typ* const action)
 {
     return ERR_WRONG_STATE;
 }
