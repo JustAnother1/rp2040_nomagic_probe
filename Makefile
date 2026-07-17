@@ -162,6 +162,7 @@ else
 endif
 
 INCDIRS +=$(NOMAGIC_FOLDER)src/
+INCDIRS +=$(NOMAGIC_FOLDER)src/probe_api/
 INCDIRS +=$(SRC_FOLDER)
 INCDIRS += target_src/
 

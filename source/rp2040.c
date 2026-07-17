@@ -28,7 +28,7 @@
 #include "probe_api/hex.h"
 #include "probe_api/result.h"
 #include "probe_api/steps.h"
-#include "probe_api/swd.h"
+#include "swd/swd.h"
 #include "probe_api/util.h"
 #include "rp2040_flash_driver.h"
 #include "target.h"
